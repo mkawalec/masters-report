@@ -1,0 +1,91 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{color,graphicx,listings,wrapfig,hyperref,algpseudocode,algorithm}
+%\usepackage[margin=2cm]{geometry}
+\usepackage[toc,page]{appendix}
+\usepackage{amsmath,subcaption}
+\newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\bigl(#1\bigr)}}
+
+\graphicspath{{./img/}}
+
+\begin{document}
+\title{Masters project}
+\author{Michal Kawalec}
+%\maketitle
+
+\section{Introduction}
+% Brief discuccion of transition to turbulence, exact coherent states
+
+In this thesis we study the behaviour of a pipe flow.
+As can easily be imagined, having a proper model that provides us with an ability to discover its dynamics with little computational expense would enable us to have a better understanding of how the flow occurs and changes to turbulence.
+Before discussing the model though, we present a firm theoretical base on which further understanding will be built.
+
+\subsection{Transition to turbulence}
+Discovering when and how a divergenceless fluid transits from linear flow to a turbulent one is of great importance in many areas of life and industry.
+As the turbulent state produces a much increased drag than a simple parabolic profile, being able to predict and minimize the frequency of its occurrence would enable us to transport many liquid goods like oil much more efficiently.
+This question has been asked for quite some time now, starting with the classic papers by Poiseuille (CITE) and Reynolds (CITE), which were important enough to influence much of the notation used today.
+Reynolds has introduced a concept of a certain number, called a Reynolds number now, which he experimentally determined to guide behaviour of a fluid when it comes to transition to turbulence.
+Reynolds number is expressed in terms of the mean flow speed \(u\), pipe diameter \(d\) and viscosity of the fluid in question \(v\) as \(Re = ud/v\).
+He discovered that, for his experiment, it was possible to carefully maintain the laminar flow up to \(Re\) of \(12000\).
+Above that number, the turbulence seemed to occur by itself, and he was unable to control it.
+Interestingly, the point at which the turbulence was possible to be triggered was much lower, around \(Re = 2000\), but only in his experiments.
+Other literature places this lowest transition point in the range of values for a Reynolds number ranging from 1760 to 2300 (CITE Kerswell 2005).
+This spread of values immediately forces us to try to explain any possible reason behind it.
+
+As we now know, for a liquid flowing in a pipe, the laminar profile is stable at any Reynolds number.
+Therefore the perturbation needs to be strong enough for it to not decay and produce at least an instant of turbulence in the fluid flow (CITE Salwen 1980, Meseguer \& Trefethen 2003).
+The higher the Reynolds number, the lower the strength of a perturbation that needs to be applied to turn the flow turbulent (CITE Hof 2003).
+That is the source of both a range of values at which the turbulence can be triggered and the highest \(Re\) at which laminar flow can be sustained.
+The range comes mostly from the fact that different researchers used stimuli of varying strength and differing kinds thus moving the place at which the turbulence is possible to be triggered.
+On the other hand, maximum \(Re\) for a laminar flow stems from the fact that certain perturbations are impossible to get rid of - ground vibrations from a distant highway, impurities in pipe geometry and so on.
+We will discuss later the exact nature of the perturbation required.
+
+Surprisingly, in pipe flow there is no state with simple spatial or temporal structures between the laminar and turbulent flow (CITE the review).
+This is in contrary to other flows and their corresponding intermediate structures, like rolls in Reyleigh-Benard or Taylor vortices in Taylor-Couette.
+As is also observed in the case of our 1D model (and will be discussed later), the turbulent state can decay into laminar flow by itself and without any clear precursors, which is exactly the behaviour observed in real fluids, as evidenced by numerical simulations (CITE Brose 1989, Faisst \& Eckhardt 2004) and experiments (CITE Darbyshire \& Mullin 1995, Hof 2004, Mullin \& Peixinho 2006).
+
+A common device for understanding complex mechanical systems is to consider them in their state space, which in case of a fluid flow in a pipe (CITE Lanford 1982) is a space of all velocity fields that can possibly occur as the flow undergoes various transitions.
+Because we know that the parabolic profile is stable it is a fixed point, and an attractor, in the phase space.
+As the Reynolds number increases the strength of the attraction decreases, thus making it much more likely for the flow to escape the basin of attraction and become turbulent.
+If the turbulent states were also attractors (CITE Guckenheimer 1986, Lanford 1982), all states close to the turbulent region would evolve towards the turbulence.
+However, we know both from the chaotic dynamics of the turbulent regions and from the fact turbulence can decay with no clear precursors that there must be chaotic elements (CITE Guckenheimer \& Holmes 1983) like horseshoes connected to the laminar profile in some ways.
+This implies that the basin of attraction of the turbulent region is neither compact nor space filling.
+Such structures are known as chaotic or strange saddles.
+It is important to note that they have positive Lyapunov exponents for motion close to the saddle and their decay probability is constant in time.
+
+An analogy that we thinks shines the most light onto an intuitive understanding of motion of the system around the state space is to consider a particle bouncing in an irregular box (CITE Ott 1993).
+As long as the box is not of a simple, symmetric shape like an ellipsoid or a cube, the dynamics of the particle will be chaotic, and thus representing our system well.
+The biggest difference between this model and a real fluid flow is that our toy example is energy conserving while fluid flow is dissipative.
+This is an issue that can be ameliorated easily by introducing a dissipative term into the motion and a motor powering the particle.
+The model is still incomplete at this stage, as we haven't specified how such motion could decay.
+Introducing a hole of an appropriate size in the wall of the box would provide us with an opportunity of accommodating this case: if the particle escapes the box, we assume that the system had decayed.
+Before hitting the hole the particle is going to bounce around randomly and the motion will exhibit a positive Lyapunov exponent.
+Because of the positive exponent, the motion will quickly stop being correlated with the starting condition and the probability of hitting a wall will remain constant, that is proportional to the ratio of the area of the hole and the total surface area of the box.
+
+This model is surprisingly close to what actually happens in a pipe flow.
+Apart from providing us with an intuitive understanding of state space dynamics of turbulence and its decay it implies that the distribution of lifetimes has to be exponential.
+This stems from the positive Lyapunov exponent causing the probability of hitting a wall to be constant.
+So far, it was only possible to determine an exact value of the Lyapunov constant for pipe flows in numerical simulations (Faisst \& Eckhardt 2004) as the process requires a control of starting conditions to a degree not yet possible in experimental setting.
+
+% There are experimental results confirming that by repeating experiments with differing initial conditions, the same is observed in numerical fluid simulations
+% The border between the laminar and turbulent dynamics is complicated,
+
+\subsubsection{Experiments}
+CITE Darbyshire, 2005 investigated what amplitude of perturbations needs to be applied to a parabolic profile to trigger the transition to turbulence for a pipe flow.
+They discovered not only that for the neighbouring points (up to the experimental resolution) the effect of applying the perturbation can be strikingly different, but that for the same points the transition sometimes occurred and sometimes didn't.
+Despite that though, an approximate line can be drawn that generally separates the `mostly turbulent' area from the `mostly decaying' one.
+Any experiment has limits on its accuracy and so it is often more revealing to use numerical simulations to investigate the effects slight changes in starting conditions have.
+In a simulation one has perfect control (up to the numerical accuracy) over the starting conditions and the evolution of the simulation and thus more fine-tuned results are possible.
+As can be seen on a figure (CITE Faisst \& Eckhardt 2004), perturbation amplitudes very close to one another produce turbulence with strikingly different lifetimes, as could be expected from experimental data.
+The simulations also confirm what can be seen in the experiments, that the higher the Reynolds number, the higher the effect perturbation of a given strength has.
+Thus at higher Reynolds numbers, lower perturbation strength is needed to induce the transition to the turbulent state.
+
+\subsubsection{Lifetimes}
+It is generally agreed that because of strong variability of lifetimes for the initial conditions it is more useful to look at the lifetimes in bulk, focusing on certain statistical properties of them, such as the survival probability vs time.
+The distribution of lifetimes is exponential, as dynamical systems theory predicts that the decay probability is independent of time, which is also analogous to our awesome example of particle bouncing around the box (CITE Kadanoff \& Tang 1984).
+The experimental data at appropriate Reynolds numbers confirms this assumption of the turbulent state being a chaotic saddle and decays are indeed observed.
+The numerical simulations also confirm this exponential dependence of the lifetimes.
+Of course, the short lifetimes are quite strongly influenced by the starting condition and follow the exponential pattern less strictly, so the exponential fit must be applied to the tail of the distribution.
+The same dependence was found in place Couette flow by CITE Bottin \& Chate 1998 experimentally, and numerically by Eckhardt 2002.
+
+\end{document}
