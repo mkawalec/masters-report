@@ -29,7 +29,7 @@ Reynolds number is expressed in terms of the mean flow speed \(u\), pipe diamete
 He discovered that, for his experiment, it was possible to carefully maintain the laminar flow up to \(Re\) of \(12000\).
 Above that number, the turbulence seemed to occur by itself, and he was unable to control it.
 Interestingly, the point at which the turbulence was possible to be triggered was much lower, around \(Re = 2000\), but only in his experiments.
-Other literature places this lowest transition point in the range of values for a Reynolds number ranging from 1760 to 2300 (CITE Kerswell 2005).
+Other literature places this lowest transition point in the range of values for a Reynolds number ranging from 1760 to 2300\cite{Kerswell05}.
 This spread of values immediately forces us to try to explain any possible reason behind it.
 
 As we now know, for a liquid flowing in a pipe, the laminar profile is stable at any Reynolds number.
@@ -94,23 +94,25 @@ This relation is again confirmed by experiments in the ranges of Reynolds number
 
 \subsubsection{Lifetimes}
 It is generally agreed that because of strong variability of lifetimes depending on the initial conditions it is more useful to look at the lifetimes in bulk, focusing on certain statistical properties of them, such as the survival probability at different times from the instant when the perturbation was introduced.
-Because of the positive Lyapunov constant in the evolution of the system through the phase space, the probability of decay to the laminar state is independent of time, just as in our example of particle in a box.
+Because of the positive Lyapunov constant in the evolution of the system through the phase space, the probability of decay to the laminar state is independent of time, just as in our example of a particle in a box.
 Because of the decay probability being constant in time, the distribution of lifetimes is an exponential (CITE Kadanoff \& Tang 1984).
 The experimental data confirms this theoretical prediction and exponential distribution of survival probability is indeed observed.
 Such a distribution implies the earlier mentioned property of the turbulent state to be a chaotic saddle in the state space.
 As well as being supported by experiment, numerical simulations also produce exponentially decaying survival probabilities (CITE Eckhardt 2002).
 Additionally, same functional form of the dependence was found in plane Couette flow by CITE Bottin \& Chate 1998 experimentally, and numerically by CITE Eckhardt 2002.
 
-Naturally, in the above cases we are talking about the tail of the survival probability distribution, as the short lifetimes are influenced much more strongly by starting conditions and thus deviate from the exponential fit quite markedly in some cases.
+Naturally, in the above cases we are talking about the tail of the survival probability distribution, as at short lifetimes the evolution is influenced strongly by starting conditions and thus deviate from the exponential fit quite markedly in some cases.
 Using the data we have from the numerical simulations we can tell that the characteristic time of the probability distribution increases quite drastically with an increasing Reynolds number.
-While there is no theoretical prediction to the nature of dependence of this time on Reynolds number, the most recent experiments performed in long pipes suggest that the characteristic time does not diverge, but increases exponentially with Reynolds number.
+While there is no theoretical prediction to the nature of dependence of this time on the Reynolds number, the most recent experiments performed in long pipes suggest that the characteristic time does not diverge, but increases exponentially with Reynolds number.
+This is in line with the results of numerical simulations which, in a limited \(Re\) range, have also shown an exponential increase of the characteristic time.
 
 \subsubsection{Exact coherent states}
-There are simpler time evolutions in the chaotic motions, like one can find a solution along the diameter of a box.
-These motions are usually not sable, but they can prove presence of chaotic horseshoes.
-There were solutions discovered by CITE, called tertiary structures, to distinguish them from bifurcations from the linear profile, and bifurcations of the bifuractions.
-There is an up-down solution in the plane Couette flow and because of that there can exist stationary solutions.
-If the symmetry is broken, the stationary solutions become travelling waves.
+As much as the motion of a system in a turbulent state is chaotic, we know now that there exist simpler, regular solutions of the equations of motion.
+The system will probably never be in one of these coherent states, but it is very possible that its path through the state space will lead close enough to one of these states so that a similar configuration will be able to be observed.
+Nevertheless, the existence of these states and their locations provide us with important informations about the nature of the chaotic saddle.
+Because of the lack of inversion symmetry in the laminar profile in a pipe flow, the simplest stationary states possible are travelling waves.
 
-The problem with pipe flow is that there are no bifurcations that can be used as a starting point, and the newton search from an arbitrary starting condition will typically not converge.
+
+\bibliographystyle{plain}
+\bibliography{masters}
 \end{document}
