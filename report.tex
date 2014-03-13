@@ -157,6 +157,29 @@ That, when one thinks about the analogy of particle in a box, implies that movem
     \caption{Comparison of the states predicted by the means of numerical simulation, on the bottom, and states observed with PIV\cite{Hof04etal}.}\label{img:ex_simu}
 \end{figure}
 
+\subsection{Drag reduction}
+
+It turns out that addition of particles into the flow quite strikingly changes its behaviour and subsequent evolution in the state space.
+It has been known since the 1940s\cite{Toms49}\cite{Mysels72} that addition of very limited amounts of polymers to water heavily reduces its its propensity to become turbulent and enables laminar flows at higher Reynolds numbers.
+Additionally, once the motion becomes turbulent, the polymer additive reduces drag by around 80\%\cite{Sreenivasan00}.
+Later it was noticed that elasticity displayed by the polymer is not required for a substantial modification of the flow dynamics\cite{Pashkewitz04} and materials such as paper or cloth pulp\cite{Radin75}\cite{Robertson57}, asbestos\cite{Mccomb85} and colloidal crystals\cite{Pirith72}\cite{Radin75}.
+Drag reduction caused by the non-elastic additives is less pronounced than that caused by polymers of various kinds.
+Even though certain methods have been proposed\cite{Pashkewitz04}\cite{Lee74} of combining properties of elastic and non-elastic additives to achieve stronger drag reduction, we will not discuss it here, as it is not a focus of this thesis.
+
+This effect is widely applied in fluid transport in pipelines\cite{Graham04} and was considered to be used for faster sea transportation\cite{Dimotakis03}, before the idea was dropped because of costs concerns.
+The reason why polymers were even considered to be worthy of being used in increasing speed of vessels on an open sea is that they are extremely potent drag reducers.
+Even concentrations as low as parts per million produce visible effects.
+An interesting property of the polymeric drag reduction is the existence of a phenomenon called the maximum drag reduction (MDR).
+Once enough polymer is added to the solution, drag reduction can be observed.
+As the concentration is increased, DR increases proportionally, until the point when it reaches a limit.
+Adding more polymers cannot decrease the drag further.
+
+\subsection{Motivation}
+In this thesis we want to implement and test a simple, one dimensional model for turbulent flow and drag reduction in a pipe.
+Because of a significantly reduced computational requirements, it is possible to execute the model for much longer times, domain sizes and numbers of runs than is possible with full direct numerical simulation of a fluid with embedded polymers.
+We will compare the results produced by the model with the ones from both experiments and other numerical simulations to establish if the model correctly simulates real conditions in a fluid.
+Because of certain limitations of the model discussed later it provides us with a limited set of information, though it should be enough for our needs.
+
 \bibliographystyle{plain}
 \bibliography{masters}
 \end{document}
