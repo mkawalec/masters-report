@@ -2,8 +2,9 @@
 
 \usepackage{color,graphicx,listings,wrapfig,hyperref,algpseudocode,algorithm,natbib}
 %\usepackage[margin=2cm]{geometry}
-\usepackage[toc,page]{appendix}
 \usepackage{amsmath,subcaption}
+\usepackage[toc,page]{appendix}
+
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\bigl(#1\bigr)}}
 
 \graphicspath{{./img/}}
@@ -180,6 +181,127 @@ Because of a significantly reduced computational requirements, it is possible to
 We will compare the results produced by the model with the ones from both experiments and other numerical simulations to establish if the model correctly simulates real conditions in a fluid.
 Because of certain limitations of the model discussed later it provides us with a limited set of information, though it should be enough for our needs.
 
+\section{Introduction of equations}
+In the subsequent thesis, we will focus on presenting a relatively simple system of coupled differential equations.
+We predict that the system will produce results that are in line with the large-scale behaviour of turbulent fluid in a pipe and thus will provide us with much more efficient model for analysing the flow than full Navier-Stokes.
+We feel that in presenting the equations it is much more educational to first consider the sources of our system of equations and then introduce the full system at the end for the reader to gain intuitive insight into rationale for each of its parts.
+
+\subsection{Swift--Hohenberg equation}
+Let's first consider a particular form of a Swift--Hohenberg\cite{Hohenberg74} equation, as presented in~\eqref{eq:sh1}, where $N(u)$ is some smooth non-linear factor.
+
+\begin{equation}\label{eq:sh1}
+\frac{\delta u}{\delta t} = -\frac{\delta^4u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon )u + N(u)
+\end{equation}
+
+There is a host of requirements for an equation that would be deemed suitable for our purpose of behaving in the same way as large-scale turbulence in the fluid.
+First of all, and the most importantly, it needs to exhibit chaotic behaviour.
+To check if that is the case in~\eqref{eq:sh1}, let's neglect the non-linear part and expand $u$ in Fourier modes. Then:
+
+\begin{equation}\label{eq:sh_u}
+    u \sim e^{\sigma t}e^{ikx}
+\end{equation}
+
+And expanding $\sigma$ in $k$ using~\eqref{eq:sh1} gives:
+
+\begin{equation}\label{eq:sh_sigma}
+    \sigma_{(k)} = -k^4 + 2k^2 - 1 + \epsilon = \epsilon - (k^2 - 1)^2
+\end{equation}
+
+Now we see that~\eqref{eq:sh_sigma}, together with~\eqref{eq:sh_u} give the growth rate for an initial perturbation of a given frequency.
+This is troubling given our initial assumption that we want to achieve chaos.
+If $\sigma_{(k)} < 0$ for all $k$, the equation will die out no matter what the starting conditions were.
+Additionally, if it is bigger than zero for some $k$s, these frequencies will grow exponentially.
+Knowing the nature of exponential growth even if $\sigma_{(k)}$ is very small, the value of Fourier component of frequencies for which it is greater than zero will escape to infinity.
+Such linear instability is not desired, so we will have to work to eliminate that.
+
+There is an additional troubling property of this equation.
+It can be proven\cite{Schneider96} that Swift--Hohenberg equation can be written in Ginsburgh--Landau formalism, that is:
+
+\begin{equation}\label{eq:sh_landau}
+    \frac{\delta u}{\delta t} = - \frac{\delta F[u(x)]}{\delta u(x)}
+\end{equation}
+
+The repercussions of this fact may not be readily visible, so let's consider computing the derivative of $F$, knowing~\eqref{eq:sh_landau}.
+
+\begin{equation}\label{eq:sh_der}
+    \frac{dF}{dt} = \int\frac{\delta F}{\delta u} \frac{\delta u}{\delta t}dx = -\int (\frac{\delta F}{\delta u})^2 dx
+\end{equation}
+
+Given that the term in the last equation is non-negative, the equation will follow the gradient of $F$ to minimise its free energy and present no chaotic behaviour.
+
+\subsection{Kuramoto--Sivashinsky equation}
+A similar equation to the one we have just presented is a special form of Kuramoto--Shivashinsky\cite{Hayman86} equation, namely:
+
+\begin{equation}\label{eq:ks1}
+    \frac{\delta u}{\delta t} = -\frac{\delta^4 u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon)u + u\frac{\delta u}{\delta x}
+\end{equation}
+
+This equation exhibits a point of linear instability at $\epsilon = 0$.
+With $\epsilon < 0$, the equation decays, if $\epsilon$ is just higher than zero, the solutions become periodic in time.
+As $\epsilon$ is increased even further, the motion finally becomes chaotic.
+Even though the motion is chaotic, it is at the same time linearly unstable.
+In order to get rid of the linear instability we propose the following moditication
+
+\subsection{Modified Kuramoto--Sivashinsky}
+We require $\epsilon$ to be smaller then zero, to enforce linear stability.
+Additionally, we need chaotic behaviour, which will be introduced by an additional term that will couple to the second equation.
+The purpose of the second equation will be to keep the amplitude of $u$ in certain bounds, in order to stop it from decaying to zero.
+
+\begin{equation}\label{eq:our1}
+    \begin{split}
+        \frac{\delta u}{\delta t} &= -\frac{\delta^4u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon)u + u\frac{\delta u}{\delta x} + (1 - \epsilon)f(v)u \\
+        \frac{\delta v}{\delta t} &= D\frac{\delta^2 v}{\delta x^2} - v + Ru^2 \\
+        f(v) &= av + bv^2
+\end{split}
+\end{equation}
+
+This equation was first introduced by Becherer, Morozov and van Saarloos\cite{Morozov09}.
+In~\eqref{eq:our1}, $a$ is larger while $b$ is smaller than zero.
+This way, the amplitude of $u$ is forced to be around the zero of $f(v)$, while at the same time squashing the linear instability.
+The equation for $v$ is rather simple, containing a diffusion term scaled by a constant $D$ and driving force proportional to $u^2$.
+
+In order to introduce polymers into the picture, we add another coupled equation, to arrive at the following system of equations, with $f(v)$ of the usual form:
+
+
+\begin{equation}\label{eq:our_poly}
+    \begin{split}
+        \frac{\delta u}{\delta t} &= -\frac{\delta^4u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon)u + u\frac{\delta u}{\delta x} + (1 - \epsilon)f(v)u + \frac{\delta \tau}{\delta x}\\
+        \frac{\delta v}{\delta t} &= D\frac{\delta^2 v}{\delta x^2} - v + Ru^2 \\
+        \frac{\delta u}{\delta x} &= \tau + \lambda(\frac{\delta \tau}{\delta t} + u\frac{\delta \tau}{\delta x} - 2\tau\frac{\delta u}{\delta x})
+\end{split}
+\end{equation}
+
+In case of~\eqref{eq:our_poly}, $u$ is now driven by the spatial derivative of the $\tau$ field.
+In order to understand the origin of the $\tau$ equation, let's consider a simplified system first, with $\tau$ equation substituted by:
+
+\begin{equation}\label{eq:poly_simp}
+    \tau + \lambda\frac{\delta \tau}{\delta t} = \frac{\delta u}{\delta x}
+\end{equation}
+
+Here, the polymer field is composed of particles that relax exponentially (second term on the left).
+The stretch is driven by spatial inhomogeneity of the $u$ field.
+We feel that this is a viable assumption, as in homogeneous velocity field no stretch caused by the velocity can happen, only translation of the polymers in space.
+
+Now we can approach the full $\tau$ equation.
+The third term from the left causes the advection of the polymeric stress with the flow of u and the fourth is related to polymeric normal stress, which reduces the value of $\frac{\delta u}{\delta x}$ proportionally to the polymeric stress.
+
+
+\section{Numerical methods}
+Both~\eqref{eq:our1} and~\eqref{eq:our_poly} are highly non-linear systems of differential equations.
+In order to solve them efficiently and accurately we use spectral methods\cite{Orszag80}, with dealiasing to get rid of the high-frequency noise.
+The non-linear part is integrated with Euler method, with the step size sufficiently small to make errors acceptable.
+Because computational complexity in computing a convolution in a Fourier space is \BigO{n^2} and transforming back to real space is \BigO{n\log(n)} where convolution costs \BigO{n}, it is more efficient to compute the non-linear terms in the real space and then transform them back into the complex space to apply the linear propagation.
+
+The linear part is solved using TODO, which enables us to solve it with high accuracy.
+Additionally, the operators can be precomputed, greatly increasing the computational efficiency of the scheme, as it requires the amount of multiplications \BigO{n}, with $n$ being the number of dimensions in the Fourier space.
+
+% TODO: Appendix describing the workings of the program
+
 \bibliographystyle{plain}
 \bibliography{masters}
+
+\newpage
+\begin{appendices}
+    \section{Program structure}
+\end{appendices}
 \end{document}
