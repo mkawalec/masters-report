@@ -12,6 +12,8 @@
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\bigl(#1\bigr)}}
 
 \graphicspath{{./img/}}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
 
 \begin{document}
 \title{Masters project}
@@ -100,7 +102,7 @@ Darbyshire \& Mullin\cite{Darbyshire95} investigated what amplitude of perturbat
 They discovered not only that for the neighbouring points (up to the experimental resolution) the effect of applying the perturbation can be strikingly different, but that for the same points the transition sometimes occurred and sometimes didn't.
 Additionally, there seemed to be no way of determining (except from a rough estimate) if a given disturbance is going to cause a transition of turbulence, or will decay to the laminar state without inducing the disturbance.
 
-\begin{figure}[h!]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.95\textwidth]{darbyshire95.png}
     \caption{Turbulence transition results obtained by Darbyshire \& Mullin\cite{Darbyshire95}, reprinted and coloured by Eckhardt et al.\cite{Eckhardt07}}\label{img:darbyshire_plot}
@@ -123,7 +125,7 @@ Such a distribution implies the earlier mentioned property of the turbulent stat
 As well as being supported by experiment, numerical simulations also produce exponentially decaying survival probabilities\cite{Eckhardt02}.
 Additionally, same functional form of the dependence was found in plane Couette flow by Bottin \& Chate\cite{Bottin98} experimentally, and numerically by Eckhardt\cite{Eckhardt02}.
 
-\begin{figure}[h!]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.95\textwidth]{decay_prob.png}
     \caption{Survival probabilities for different Reynolds numbers as determined by Direct Numerical Simulations by Eckhardt et al\cite{Eckhardt02}.}\label{img:decay_plot}
@@ -141,10 +143,10 @@ Finding these states that guide the spatial and temporal evolution of a flow in 
 Because of the lack of inversion symmetry in the laminar profile of a pipe flow, the simplest coherent solutions to the equations of motion take form of travelling waves.
 An example of such a travelling wave is presented on Image~\ref{img:stat_states}, arrows indicating fluid flow in place of the cross-section.
 
-\begin{figure}[h!]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.65\textwidth]{stationary_states.png}
-    \caption{An example of a stationary wave, shown here in the first half of its period (the other half is inverted in the horizontal axis). Each cross-section shows a snapshot of the wave every $1/6$ of its period, as found by Faisst \& Eckhardt\cite{Faist08}.}\label{img:stat_states}
+    \caption{An example of a stationary wave, shown here in the first half of its period (the other half is inverted in the horizontal axis). Each cross-section shows a snapshot of the wave every $1/6$ of its period, as found by Faisst \& Eckhardt\cite{Faisst08}.}\label{img:stat_states}
 \end{figure}
 
 The waves that have been found contain from two to five `vortex pairs that generate high-speed streaks close to the walls and low speed streaks in the centre'\cite{Eckhardt07}.
@@ -156,9 +158,9 @@ Difference between the observed states and the ones predicted by the simulation 
 An important idea to stress again is the fact that the survival probability for a chaotic saddle, such as the one spanned by the coherent state will be an exponential.
 That, when one thinks about the analogy of particle in a box, implies that movement around a chaotic saddle will always decay, with a lower or higher component of an exponential.
 
-\begin{figure}[h!]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=0.95\textwidth]{experiment_vs_simulation.jpg}
+    \includegraphics[width=0.95\textwidth]{experiment_vs_simulation.png}
     \caption{Comparison of the states predicted by the means of numerical simulation, on the bottom, and states observed with PIV\cite{Hof04etal}.}\label{img:ex_simu}
 \end{figure}
 
@@ -187,19 +189,20 @@ Because of certain limitations of the model discussed later it provides us with 
 
 \section{Introduction of equations}
 In the subsequent thesis, we will focus on presenting a relatively simple system of coupled differential equations.
-We predict that the system will produce results that are in line with the large-scale behaviour of turbulent fluid in a pipe and thus will provide us with much more efficient model for analysing the flow than full Navier-Stokes.
-We feel that in presenting the equations it is much more educational to first consider the sources of our system of equations and then introduce the full system at the end for the reader to gain intuitive insight into rationale for each of its parts.
+We will test if the system produces results that are in line with the large-scale behaviour of turbulent fluid in a pipe and thus will provide us with much more efficient model for analysing the flow than solving the full Navier-Stokes equation.
+We feel that in presenting the equations it is much more educational to first consider the sources of our system of equations and then introduce the full system at the end.
+This way the reader will gain an insight into rationale for existence of individual parts of the equations and will understand them on an intuitive level.
 
 \subsection{Swift--Hohenberg equation}
-Let's first consider a particular form of a Swift--Hohenberg\cite{Hohenberg74} equation, as presented in~\eqref{eq:sh1}, where $N(u)$ is some smooth non-linear factor.
+In order to understand the dynamics of our system of equations~\eqref{eq:our1}, let's first consider a particular form of a Swift--Hohenberg\cite{Hohenberg74} equation, as presented in~\eqref{eq:sh1} (where $N(u)$ is some smooth non-linear factor proportional to $u^3$).
 
 \begin{equation}\label{eq:sh1}
 \frac{\delta u}{\delta t} = -\frac{\delta^4u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon )u + N(u)
 \end{equation}
 
-There is a host of requirements for an equation that would be deemed suitable for our purpose of behaving in the same way as large-scale turbulence in the fluid.
-First of all, and the most importantly, it needs to exhibit chaotic behaviour.
-To check if that is the case in~\eqref{eq:sh1}, let's neglect the non-linear part and expand $u$ in Fourier modes. Then:
+As far as this equation does not simulate our turbulent system, it serves as a good basis for understanding of different issues that must be taken into account when creating a correct one.
+One of the major requirements on a system of equations that would serve our purpose well is for it to exhibit chaotic behaviour.
+To check if that is the case in~\eqref{eq:sh1}, let's think of a case of small perturbations, which lets us neglect the non-linear $u^3$ part and expand $u$ in Fourier modes. Then:
 
 \begin{equation}\label{eq:sh_u}
     u \sim e^{\sigma t}e^{ikx}
@@ -211,21 +214,23 @@ And expanding $\sigma$ in $k$ using~\eqref{eq:sh1} gives:
     \sigma_{(k)} = -k^4 + 2k^2 - 1 + \epsilon = \epsilon - (k^2 - 1)^2
 \end{equation}
 
-Now we see that~\eqref{eq:sh_sigma}, together with~\eqref{eq:sh_u} give the growth rate for an initial perturbation of a given frequency.
-This is troubling given our initial assumption that we want to achieve chaos.
-If $\sigma_{(k)} < 0$ for all $k$, the equation will die out no matter what the starting conditions were.
-Additionally, if it is bigger than zero for some $k$s, these frequencies will grow exponentially.
-Knowing the nature of exponential growth even if $\sigma_{(k)}$ is very small, the value of Fourier component of frequencies for which it is greater than zero will escape to infinity.
-Such linear instability is not desired, so we will have to work to eliminate that.
+Now we see that~\eqref{eq:sh_sigma}, substituted into~\eqref{eq:sh_u} gives the growth rate for an initial perturbation of a given frequency.
+This is troubling, because it makes the time evolution linearly unstable.
+To understand what this means, let's consider three possible cases.
+If $\sigma_{(k)} < 0$ for a given $k$, it would imply that the disturbance of that frequency would decay towards zero because of the nature of exponential decay.
+If $\sigma_{(k)}$ equals zero for a value of $k$, then this frequency would become constant and all the others would still decay.
+In the last case of $\sigma_{(k)}$ being greater than zero for some values of $k$ we are faced with an exponential amplification of certain frequencies and decay of others.
+This is not the desired dynamics at all -- we do not want en exponential explosion or decay.
+We will have to modify the equation later to eliminate or counteract this property.
 
-There is an additional troubling property of this equation.
-It can be proven\cite{Schneider96} that Swift--Hohenberg equation can be written in Ginsburgh--Landau formalism, that is:
+However, before we do that, let's focus on another of its troubling properties.
+It can be proven\cite{Schneider96} that Swift--Hohenberg equation can be written in an Ginsburgh--Landau formalism, that is transformed in a way that would express the RHS in terms of a functional derivative:
 
 \begin{equation}\label{eq:sh_landau}
     \frac{\delta u}{\delta t} = - \frac{\delta F[u(x)]}{\delta u(x)}
 \end{equation}
 
-The repercussions of this fact may not be readily visible, so let's consider computing the derivative of $F$, knowing~\eqref{eq:sh_landau}.
+As much as the repercussions of this fact may not be readily visible, let's consider computing the derivative of $F$, knowing~\eqref{eq:sh_landau}.
 
 \begin{equation}\label{eq:sh_der}
     \frac{dF}{dt} = \int\frac{\delta F}{\delta u} \frac{\delta u}{\delta t}dx = -\int (\frac{\delta F}{\delta u})^2 dx
@@ -234,22 +239,22 @@ The repercussions of this fact may not be readily visible, so let's consider com
 Given that the term in the last equation is non-negative, the equation will follow the gradient of $F$ to minimise its free energy and present no chaotic behaviour.
 
 \subsection{Kuramoto--Sivashinsky equation}
-A similar equation to the one we have just presented is a special form of Kuramoto--Shivashinsky\cite{Hayman86} equation, namely:
+Continuing our journey of finding a suitable model to our problem, let's consider a slightly modified version of the above equation that is a special form of Kuramoto--Shivashinsky\cite{Hayman86} equation:
 
 \begin{equation}\label{eq:ks1}
     \frac{\delta u}{\delta t} = -\frac{\delta^4 u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon)u + u\frac{\delta u}{\delta x}
 \end{equation}
 
-This equation exhibits a point of linear instability at $\epsilon = 0$.
-With $\epsilon < 0$, the equation decays, if $\epsilon$ is just higher than zero, the solutions become periodic in time.
+This equation also exhibits a point of linear instability at $\epsilon = 0$.
+It's behaviour is more interesting though, as if $\epsilon$ is just higher than zero, the solutions become periodic in time.
 As $\epsilon$ is increased even further, the motion finally becomes chaotic.
 Even though the motion is chaotic, it is at the same time linearly unstable.
-In order to get rid of the linear instability we propose the following moditication
+In order to get rid of the linear instability we propose the following modification.
 
 \subsection{Modified Kuramoto--Sivashinsky}
 We require $\epsilon$ to be smaller then zero, to enforce linear stability.
-Additionally, we need chaotic behaviour, which will be introduced by an additional term that will couple to the second equation.
-The purpose of the second equation will be to keep the amplitude of $u$ in certain bounds, in order to stop it from decaying to zero.
+Additionally, we note that if an amplitude in~\eqref{eq:ks1} is kept above a certain threshold, the chaotic behaviour is preserved.
+In order to force the amplitude to remain in the chaotic region, we will couple our equation to a second one describing a field forcing the value of $u$.
 
 \begin{equation}\label{eq:our1}
     \begin{split}
@@ -259,46 +264,52 @@ The purpose of the second equation will be to keep the amplitude of $u$ in certa
 \end{split}
 \end{equation}
 
-This equation was first introduced by Becherer, Morozov and van Saarloos\cite{Morozov09}.
+The above equation was first introduced by Becherer, Morozov and van Saarloos\cite{Morozov09}.
 In~\eqref{eq:our1}, $a$ is larger while $b$ is smaller than zero.
 This way, the amplitude of $u$ is forced to be around the zero of $f(v)$, while at the same time squashing the linear instability.
 The equation for $v$ is rather simple, containing a diffusion term scaled by a constant $D$ and driving force proportional to $u^2$.
+Both equations together are used by us to describe the evolution of decaying turbulence in a pipe filled with water.
 
-In order to introduce polymers into the picture, we add another coupled equation, to arrive at the following system of equations, with $f(v)$ of the usual form:
+In order to introduce polymers into the picture, we add an another coupled equation, to arrive at the following system of equations, with $f(v)$ of the usual form:
 
 
 \begin{equation}\label{eq:our_poly}
     \begin{split}
         \frac{\delta u}{\delta t} &= -\frac{\delta^4u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon)u + u\frac{\delta u}{\delta x} + (1 - \epsilon)f(v)u + \frac{\delta \tau}{\delta x}\\
         \frac{\delta v}{\delta t} &= D\frac{\delta^2 v}{\delta x^2} - v + Ru^2 \\
-        \frac{\delta u}{\delta x} &= \tau + \lambda(\frac{\delta \tau}{\delta t} + u\frac{\delta \tau}{\delta x} - 2\tau\frac{\delta u}{\delta x})
+        \frac{\delta \tau}{\delta x} &= \tau + \lambda(\frac{\delta \tau}{\delta t} + u\frac{\delta \tau}{\delta x} - 2\tau\frac{\delta u}{\delta x})
 \end{split}
 \end{equation}
 
-In case of~\eqref{eq:our_poly}, $u$ is now driven by the spatial derivative of the $\tau$ field.
-In order to understand the origin of the $\tau$ equation, let's consider a simplified system first, with $\tau$ equation substituted by:
+In~\eqref{eq:our_poly} $u$ is coupled to the $\tau$ field by its spatial derivative.
+To understand the origin of the $\tau$ equation, let's consider a simplified system first, with $\tau$ equation substituted by:
 
 \begin{equation}\label{eq:poly_simp}
-    \tau + \lambda\frac{\delta \tau}{\delta t} = \frac{\delta u}{\delta x}
+    \frac{\delta u}{\delta x} = \tau + \lambda\frac{\delta \tau}{\delta t} 
 \end{equation}
 
 Here, the polymer field is composed of particles that relax exponentially (second term on the left).
 The stretch is driven by spatial inhomogeneity of the $u$ field.
-We feel that this is a viable assumption, as in homogeneous velocity field no stretch caused by the velocity can happen, only translation of the polymers in space.
+We feel that this is a viable assumption, as in a homogeneous velocity field no stretch caused by the velocity can happen, only translation of the polymers in space.
 
-Now we can approach the full $\tau$ equation.
-The third term from the left causes the advection of the polymeric stress with the flow of u and the fourth is related to polymeric normal stress, which reduces the value of $\frac{\delta u}{\delta x}$ proportionally to the polymeric stress.
-
+Now we can approach the full $\tau$ equation~\eqref{eq:our_poly}.
+Let's consider the terms being multiplied by $\lambda$.
+The second term from the left describes the advection of the polymeric stress with the flow of $u$.
+It exists because we want the polymers to be able to be translated with the flow as they are diluted in it.The fourth term is related to polymeric normal stress, which reduces the value of $\frac{\delta u}{\delta x}$ proportionally to the polymeric stress.
+% TODO: Write about this thing, why is the value reduced proportionally?
 
 \section{Numerical methods}
 Both~\eqref{eq:our1} and~\eqref{eq:our_poly} are highly non-linear systems of differential equations.
 In order to solve them efficiently and accurately we use spectral methods\cite{Orszag80}, with dealiasing to get rid of the high-frequency noise.
 The non-linear part is integrated with Euler method, with the step size sufficiently small to make errors acceptable.
-Because computational complexity in computing a convolution in a Fourier space is \BigO{n^2} and transforming back to real space is \BigO{n\log(n)} where convolution costs \BigO{n}, it is more efficient to compute the non-linear terms in the real space and then transform them back into the complex space to apply the linear propagation.
+Because computational complexity in calculating a convolution in a Fourier space is \BigO{n^2} and transforming back to real space (where convolution costs \BigO{n}) is \BigO{n\log(n)}, it is more efficient to compute the non-linear terms in the real space and then transform them back into the complex space to apply the linear propagation.
 
-The linear part is solved using TODO, which enables us to solve it with high accuracy.
+The linear part is solved using Crank--Nicolson , which enables us to solve it with high accuracy.
 Additionally, the operators can be precomputed, greatly increasing the computational efficiency of the scheme, as it requires the amount of multiplications \BigO{n}, with $n$ being the number of dimensions in the Fourier space.
 
+% TODO: About preserving causality in polymeric case
+
+\section{What is measured}
 % TODO: Appendix describing the workings of the program
 
 \bibliographystyle{plain}
@@ -375,6 +386,7 @@ Additionally, the operators can be precomputed, greatly increasing the computati
     That is achieved while keeping all the data in a continuous block of memory and ensuring that after the swap is applied individual row data is not invalidated in CPU caches.
     Additionally, the data is stored in a row-first manner, which exploits cache locality and memory prefetching when a matrix is multiplied by a vector.
 
+    \section{Organisations and tools that were essential to this thesis}
 
 
 \end{appendices}
