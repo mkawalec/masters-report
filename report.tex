@@ -1,9 +1,13 @@
 \documentclass[11pt,a4paper]{article}
 
-\usepackage{color,graphicx,listings,wrapfig,hyperref,algpseudocode,algorithm,natbib}
+\usepackage{color,graphicx,wrapfig,hyperref,algpseudocode,algorithm,natbib}
 %\usepackage[margin=2cm]{geometry}
 \usepackage{amsmath,subcaption}
 \usepackage[toc,page]{appendix}
+
+\usepackage{minted,fontspec}
+\setmonofont{Menlo for Powerline}
+\setsansfont{Liberation Sans}
 
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\bigl(#1\bigr)}}
 
@@ -303,5 +307,75 @@ Additionally, the operators can be precomputed, greatly increasing the computati
 \newpage
 \begin{appendices}
     \section{Program structure}
+    \subsection{Choice of language}
+    We decided to use C++ as a programming language of choice for this project.
+    It was chosen, as it offers the highest possible speed of code execution and comes with a big community and existing code base.
+    It was also one of the most best known programming languages to the author.
+    We are confident that by exploiting the C++11 extensions to the language and by using its correct subset and libraries we achieved high performance, good modularity and high readability of the code.
+
+    Before development started we were considering Haskell as a likely choice for the language.
+    After thorough consideration we decided against it, as we have much less experience with it and the base of existing code is orders of magnitude smaller than in case of C++.
+
+    \subsection{Modular structure}
+    In an effort to keep the code as clear and compartmentalised as possible, we decided to use a runtime plug-in system.
+    We were mostly inspired to do so by Rivet\cite{Rivet13} source code, which uses this technique to provide dynamic, runtime-loaded plug-ins for particle analyses.
+    On the technical side, our application is divided into a core, which does some initial set-up and fires up the program, and a set of plug-ins.
+    The plug-ins are divided into four main groups: \texttt{Computer}s, \texttt{Integrator}s, \texttt{Searcher}s and \texttt{Serializer}s.
+    Each of the groups has its own base class, which name is written in a monospaced font above.
+    The base class is in charge of some common operations to all of the possible instances of the class.
+    It provides a common overloadable API, storage and static instance collections.
+    Because the API is governed by the base class, any function using any \texttt{Computer} can easily exchange the particular instance of the computer for another instance that computes something else and no calls will change.
+    Additionally, it is possible to retrieve a \texttt{std::list} of available instance by requesting a static property of one of the base classes called `available'.
+
+    All of these middle-tier base classes inherit from a single templated base class \texttt{Base<T>}.
+    The common base reduces code duplication and increases interchangeability by supplying boiler-plate code and common overloadble API functions.
+    
+    \subsubsection{Using the plug-in structure}
+    In order to create a new minimal instance of a plug-in class, one of the middle-tier base classes need to be inherited from.
+    At least an implementation of pure virtual functions needs to be provided.
+    This still does not enable dynamic runtime discovery of the available plug-ins, which is achieved through calling the registration callback as follows:
+
+    \begin{minted}{c++}
+    DECLARE_TURB_PLUGIN(class_name);
+    \end{minted}
+
+    Of course \texttt{class\_name} above needs to be substituted with an actual name of the class, \texttt{DECLARE\_TURB\_PLUGIN} needs to be available in current scope (this is achieved by including \texttt{helpers.hpp}) and the call should be made outside the \texttt{turb} name space.
+    This preprocessor macro creates an instance of the current class and additionally shields us from any future changes in the plug-in architecture.
+    Because a new class instance is created to register an instance in the plug-ins manager, it is important to allocate as little (preferably none) memory as possible in a constructor instead deferring memory allocation to another hook, be it \texttt{allocate}, \texttt{initialize} or something else.
+
+    \subsection{Build system}
+    In order to generate portable, state of the art Makefiles, \texttt{CMake} is used.
+    It provides us with automatic discovery of available libraries at different location, intuitive creation of dynamically and statically linked libraries and wide support on target architectures.
+    It is also substantially faster in initial preparation than \texttt{automake} and provides progress indication on the compilation, which is greatly helpful with the code size of our code base.
+
+    \subsection{Helper programs and scripts}
+    \texttt{Bash} and \texttt{Python} are used as scripting languages to help with certain tasks, where appropriate.
+    The former is used for streamlining sequences of commands for instance when doing initial set-up of the application.
+    The latter turned out to be very useful with generation of batch scripts for running multiple jobs at \texttt{ARCHER} and \texttt{HECToR} and for plot generation.
+    At a certain point, before we had access to these supercomputers, scaling was achieved through an ad-hoc built job system working on \texttt{CPLAB} computers at the University of Edinburgh.
+    This enabled us to run the program at hundreds of cores at virtually unused computers, with full operating system level access to each of them.
+    Because of the inability to scale past a quite low amount of cores and quite low speed of CPU cores, we have obtained the access to the supercomputers and the Python job runner was scrapped.
+
+    \subsection{Libraries used}
+    We decided to use as many features available from the core of C++11 as possible, supplementing them with libraries only where needed and appropriate.
+    Most notably, we have used the \texttt{Boost}\cite{gurtovoy02} library for providing certain needed functionality that could be described as boiler-plate.
+    First of all, it enabled us to easily parse command line options.
+    We strongly feel that the command line and file options parser implemented by Boost is one of the best ones available for C++.
+    Additionally, an architecture-independent nanosecond resolution timer available as a part of Boost has been used for seeding random number generators.
+    It is work noting that we did use an implementation of Mersenne-Twister\cite{Matsumoto98} random number generator from Boost at first, but we decided against it, as the same RNG is available as a part of C++11.
+
+    Because application is usually ran on very big processor counts of above 5000 processors, we needed a data-exchange scheme suitable for such an usage.
+    It is provided by \texttt{MPI}\cite{richard06}, which enables virtually perfect scaling of our application, while being acceptably intuitive and clear.
+    The biggest power of \texttt{MPI} in our case was that when combined with Run-time Type Information (RTTI) in C++ it is possible to create a framework that facilitates automatic sending of the data using a much more readable API.
+
+    For matrix manipulation, we use a combination of \texttt{Armadillo}\cite{Sanderson10} and a self-written matrix class.
+    \texttt{Armadillo} shines when it comes to intuitive usage and a wide range of available operations.
+    At certain performance-critical places we use our data structure instead, as it has several benefits.
+    First of all it enables ultra-fast row swaps which require only a pointer swap.
+    That is achieved while keeping all the data in a continuous block of memory and ensuring that after the swap is applied individual row data is not invalidated in CPU caches.
+    Additionally, the data is stored in a row-first manner, which exploits cache locality and memory prefetching when a matrix is multiplied by a vector.
+
+
+
 \end{appendices}
 \end{document}

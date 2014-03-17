@@ -1,6 +1,6 @@
 #!/bin/bash
 
-pdflatex report.tex
+xelatex -shell-escape report.tex
 bibtex report.aux
-pdflatex report.tex
-pdflatex report.tex
+xelatex -shell-escape report.tex
+xelatex -shell-escape report.tex
