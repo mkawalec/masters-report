@@ -304,9 +304,10 @@ In order to solve them efficiently and accurately we use spectral methods\cite{O
 The non-linear part is integrated with Euler method, with the step size sufficiently small to make errors acceptable.
 Because computational complexity in calculating a convolution in a Fourier space is \BigO{n^2} and transforming back to real space (where convolution costs \BigO{n}) is \BigO{n\log(n)}, it is more efficient to compute the non-linear terms in the real space and then transform them back into the complex space to apply the linear propagation.
 
-The linear part is solved using Crank--Nicolson , which enables us to solve it with high accuracy.
+The linear part is solved using Crank--Nicolson method., which enables us to solve it with high accuracy.
 Additionally, the operators can be precomputed, greatly increasing the computational efficiency of the scheme, as it requires the amount of multiplications \BigO{n}, with $n$ being the number of dimensions in the Fourier space.
 
+% The intro to C-N, describe why it works this way. Describe how the linear operators are formed, and why are they formed this way, why by using Jacobian.hpp speeds stuff up
 % TODO: About preserving causality in polymeric case
 
 \section{What is measured}
@@ -319,8 +320,8 @@ Additionally, the operators can be precomputed, greatly increasing the computati
 \begin{appendices}
     \section{Program structure}
     \subsection{Choice of language}
-    We decided to use C++ as a programming language of choice for this project.
-    It was chosen, as it offers the highest possible speed of code execution and comes with a big community and existing code base.
+    We decided to use C++ as a programming language for this project.
+    It was chosen as it offers the highest possible speed of code execution and comes with a big community and existing code base.
     It was also one of the most best known programming languages to the author.
     We are confident that by exploiting the C++11 extensions to the language and by using its correct subset and libraries we achieved high performance, good modularity and high readability of the code.
 
