@@ -277,7 +277,7 @@ In order to introduce polymers into the picture, we add an another coupled equat
     \begin{split}
         \frac{\delta u}{\delta t} &= -\frac{\delta^4u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon)u + u\frac{\delta u}{\delta x} + (1 - \epsilon)f(v)u + \frac{\delta \tau}{\delta x}\\
         \frac{\delta v}{\delta t} &= D\frac{\delta^2 v}{\delta x^2} - v + Ru^2 \\
-        \frac{\delta \tau}{\delta x} &= \tau + \lambda(\frac{\delta \tau}{\delta t} + u\frac{\delta \tau}{\delta x} - 2\tau\frac{\delta u}{\delta x})
+        \frac{\delta u}{\delta x} &= \tau + \lambda(\frac{\delta \tau}{\delta t} + u\frac{\delta \tau}{\delta x} - 2\tau\frac{\delta u}{\delta x})
 \end{split}
 \end{equation}
 
@@ -301,17 +301,89 @@ It exists because we want the polymers to be able to be translated with the flow
 \section{Numerical methods}
 Both~\eqref{eq:our1} and~\eqref{eq:our_poly} are highly non-linear systems of differential equations.
 In order to solve them efficiently and accurately we use spectral methods\cite{Orszag80}, with dealiasing to get rid of the high-frequency noise.
+We split the computation into two halves -- first we compute the linear part, then the non-linear one.
+Because we use different numerical methods for each, such a split makes computations less expensive.
+The reason for that will be explained in a few paragraphs.
+
 The non-linear part is integrated with Euler method, with the step size sufficiently small to make errors acceptable.
 Because computational complexity in calculating a convolution in a Fourier space is \BigO{n^2} and transforming back to real space (where convolution costs \BigO{n}) is \BigO{n\log(n)}, it is more efficient to compute the non-linear terms in the real space and then transform them back into the complex space to apply the linear propagation.
 
-The linear part is solved using Crank--Nicolson method., which enables us to solve it with high accuracy.
-Additionally, the operators can be precomputed, greatly increasing the computational efficiency of the scheme, as it requires the amount of multiplications \BigO{n}, with $n$ being the number of dimensions in the Fourier space.
+The linear part is solved using a Crank--Nicolson\cite{Crank47} method.
+It is a combination of forward Newton method at time step $n$ and backward Newton at time step $n + 1$ for a given differential equation,  as follows:
 
-% The intro to C-N, describe why it works this way. Describe how the linear operators are formed, and why are they formed this way, why by using Jacobian.hpp speeds stuff up
-% TODO: About preserving causality in polymeric case
+\begin{equation}\label{eq:cn1}
+    \frac{u^{n+1}_i - u^n_i}{\Delta t} = \frac{1}{2}[F^{n+1}_i(u, x, t, \frac{\delta u}{\delta x}, \frac{\delta^2u}{\delta x^2}, \frac{\delta^4u}{\delta x^4}) + F^n_i(u, x, t, \frac{\delta u}{\delta x}, \frac{\delta^2u}{\delta x^2}, \frac{\delta^4u}{\delta x^4})]
+\end{equation}
+
+For a differential equation of the form:
+
+\begin{equation}\label{eq:cn_eq}
+    \frac{\delta u}{\delta t} = F(u, x, t, \frac{\delta u}{\delta x}, \frac{\delta^2u}{\delta x^2}, \frac{\delta^4u}{\delta x^4})
+\end{equation}
+
+Notice that in order to obtain the value of $u^{n+1}$, a system of equations needs to be solved, as we do not know the value of $F^{n+1}_i$.
+Because the split into the linear and non-linear parts is applied, $F$ is completely linear.
+If it was not, it would be impossible to create a constant linear operator for the process and for each time step a non-linear system of equations would need to be solved, using Euler method.
+This would substantially increase the length of the computations.
+Thankfully for the computational effectiveness of the process, we split the equation and precompute linear operators can be precomputed ahead of time.
+With operator precomputation, the computational complexity of propagating the equation to a new time step is \BigO{n}, with $n$ being the spatial resolution.
+The advantage of Crank--Nicolson method over simple Euler scheme is drastically increased accuracy, as long as the ratio of $\Delta t$ to $\Delta x^2$ is kept low.
+
+There is an additional problem that arises when~\eqref{eq:our_poly} is attempted to be solved.
+Because $u$ and $\tau$ depend linearly on each other, a scheme that preserves causality needs to be employed.
+A `simple' substitution of values of $u$ and $\tau$ into the equations would mix the time steps $n$ and $n+1$ with disastrous effects for correctness.
+To see why, consider transforming the $\tau$ equation from~\eqref{eq:our_poly} in such a way as to put $\frac{\delta \tau}{\delta t}$ on LHS:
+
+\begin{equation}\label{eq:tau_transf}
+    \frac{\delta \tau}{\delta t} = \frac{1}{\lambda}\frac{\delta u}{\delta x} - u\frac{\delta \tau}{\delta x} - \frac{\tau}{\lambda} + 2\tau\frac{\delta u}{\delta x}
+\end{equation}
+
+Comparing with~\eqref{eq:our_poly} it can clearly be seen that $u$ linearly depends on values of $v$ and the other way around.
+Given the above, we can write just the linear parts of $u$ and $\tau$ in the following form:
+
+\begin{alignat}{2}
+    \frac{\delta u}{\delta t} &= Lu + C\tau &\quad \frac{\delta \tau}{\delta t} &= Au + B\tau\\
+    L &= -\frac{\delta^4}{\delta x^4} - 2\frac{\delta^2}{\delta x^2} - 1 + \epsilon & A &= \frac{1}{\lambda}\frac{\delta}{\delta x} \nonumber \\
+    C &= \frac{\delta}{\delta x} & B &= - \frac{1}{\lambda} \nonumber
+\end{alignat}
+
+Substituting above into the Crank--Nicolson scheme:
+
+\begin{equation}\label{eq:cn_ops}
+    \begin{aligned}
+        \frac{u^{n+1} - u^n}{\Delta t} &= L\frac{u^{n+1} + u^n}{2} + C\frac{\tau^{n+1} + \tau^n}{2} \\
+        \frac{\tau^{n+1} - \tau^n}{\Delta t} &= A\frac{u^{n+1} + u^n}{2} + B\frac{\tau^{n+1} + \tau^n}{2}
+    \end{aligned}
+\end{equation}
+
+Which can be written in a clear and readable matrix form:
+
+\begin{equation}\label{eq:cn_simpl}
+    \begin{aligned}
+        \begin{pmatrix}
+            u^{n+1} \\
+            \tau^{n+1}
+        \end{pmatrix} &= (I - Z)^{-1} (I + Z) \begin{pmatrix} u^n \\ \tau^n \end{pmatrix} \\
+            Z &= \frac{\Delta t}{2}\begin{pmatrix}
+            L & C \\
+            A & B
+        \end{pmatrix}
+    \end{aligned}
+\end{equation}
+
+Because all the coefficients in the $Z$ matrix are constant, $(I - Z)^{-1}(I + Z)$ can be precomputed before integration.
+This still results in \BigO{n^2} multiplications instead of \BigO{n} for each time step, but it is a cost that is not substantially higher (for typical number of dimensions) than that of other parts of the program.
+
+\subsection{Starting conditions}
+In order to integrate the equation~\eqref{eq:our_poly} numerically, we need to determine starting conditions.
+As we are interested in the bulk behaviour of many turbulent runs and we need reasonable amount of statistics, we have decided to get the starting conditions from a random number generator.
+We have chosen Mersenne--Twister\cite{Matsumoto98}, as it is very fast, has extremely large period, very good equidistirbution properties and is readily available on the platform used by us.
+We seed the random number generator with a nanosecond--resolution timer, which ensures sufficient entropy in seed values, even if tens of thousands of programs are started at almost the same time.
+As we do not need cryptographically--secure random numbers, the randomness offered by Mersenne--Twister is entirely sufficient to our needs.
 
 \section{What is measured}
-% TODO: Appendix describing the workings of the program
+
+% TODO: Describe what we want to measure, do after the results section, I think.
 
 \bibliographystyle{plain}
 \bibliography{masters}
@@ -320,13 +392,11 @@ Additionally, the operators can be precomputed, greatly increasing the computati
 \begin{appendices}
     \section{Program structure}
     \subsection{Choice of language}
-    We decided to use C++ as a programming language for this project.
-    It was chosen as it offers the highest possible speed of code execution and comes with a big community and existing code base.
-    It was also one of the most best known programming languages to the author.
-    We are confident that by exploiting the C++11 extensions to the language and by using its correct subset and libraries we achieved high performance, good modularity and high readability of the code.
-
-    Before development started we were considering Haskell as a likely choice for the language.
-    After thorough consideration we decided against it, as we have much less experience with it and the base of existing code is orders of magnitude smaller than in case of C++.
+    Before the start of the project different programming languages were considered for its implementation.
+    It was quickly agreed upon that speed and scalability are by far the most important requirements for the program, which left only C++, Haskell and C as the likely contenders (of course only languages familiar to the author were considered).
+    We chose C++ against other possibilities, as it has by far the biggest existing code base, good and complete libraries and useful structures for structuring the program in clear fashion.
+    One could argue that Haskell provides features of the same or even better quality, but we were substantially less familiar with it and hence it was ruled out.
+    Additionally, we feel that through latest additions to the language with the advent of C++11, C++ became a vastly more complete and useful tool.
 
     \subsection{Modular structure}
     In an effort to keep the code as clear and compartmentalised as possible, we decided to use a runtime plug-in system.
@@ -334,16 +404,16 @@ Additionally, the operators can be precomputed, greatly increasing the computati
     On the technical side, our application is divided into a core, which does some initial set-up and fires up the program, and a set of plug-ins.
     The plug-ins are divided into four main groups: \texttt{Computer}s, \texttt{Integrator}s, \texttt{Searcher}s and \texttt{Serializer}s.
     Each of the groups has its own base class, which name is written in a monospaced font above.
-    The base class is in charge of some common operations to all of the possible instances of the class.
+    The base class is in charge of some operations common to all instances of the class.
     It provides a common overloadable API, storage and static instance collections.
-    Because the API is governed by the base class, any function using any \texttt{Computer} can easily exchange the particular instance of the computer for another instance that computes something else and no calls will change.
-    Additionally, it is possible to retrieve a \texttt{std::list} of available instance by requesting a static property of one of the base classes called `available'.
+    Because the API is governed by the base class, in any place in the program where a child class of \texttt{Computer} is used one can substitute this particular child class for any other and no calls will change.
+    Additionally, it is possible to retrieve a \texttt{std::list} of available instances of child classes by requesting a static property of one of the base classes called `available'.
 
     All of these middle-tier base classes inherit from a single templated base class \texttt{Base<T>}.
-    The common base reduces code duplication and increases interchangeability by supplying boiler-plate code and common overloadble API functions.
+    The common base reduces code duplication and increases interoperability by supplying boiler-plate code and common overloadble API functions.
     
     \subsubsection{Using the plug-in structure}
-    In order to create a new minimal instance of a plug-in class, one of the middle-tier base classes need to be inherited from.
+    In order to create a new minimal instance of a plug-in child class, one of the middle-tier base classes need to be inherited from.
     At least an implementation of pure virtual functions needs to be provided.
     This still does not enable dynamic runtime discovery of the available plug-ins, which is achieved through calling the registration callback as follows:
 
@@ -351,30 +421,30 @@ Additionally, the operators can be precomputed, greatly increasing the computati
     DECLARE_TURB_PLUGIN(class_name);
     \end{minted}
 
-    Of course \texttt{class\_name} above needs to be substituted with an actual name of the class, \texttt{DECLARE\_TURB\_PLUGIN} needs to be available in current scope (this is achieved by including \texttt{helpers.hpp}) and the call should be made outside the \texttt{turb} name space.
-    This preprocessor macro creates an instance of the current class and additionally shields us from any future changes in the plug-in architecture.
-    Because a new class instance is created to register an instance in the plug-ins manager, it is important to allocate as little (preferably none) memory as possible in a constructor instead deferring memory allocation to another hook, be it \texttt{allocate}, \texttt{initialize} or something else.
+    Of course \texttt{class\_name} above needs to be substituted with an actual name of the class, \texttt{DECLARE\_TURB\_PLUGIN} needs to be available in current scope (this is achieved by including \textit{helpers.hpp}) and the call should be made outside the \textit{turb} name space.
+    This preprocessor macro creates an instance of the current class and shields us from any future changes in the plug-ins architecture.
+    Because a new class instance is created to register an instance in the plug-ins manager, it is important to allocate as little memory as possible (preferably none) in a constructor instead deferring memory allocation to another `hook', be it \texttt{allocate}, \texttt{initialize} or something else.
 
     \subsection{Build system}
     In order to generate portable, state of the art Makefiles, \texttt{CMake} is used.
-    It provides us with automatic discovery of available libraries at different location, intuitive creation of dynamically and statically linked libraries and wide support on target architectures.
-    It is also substantially faster in initial preparation than \texttt{automake} and provides progress indication on the compilation, which is greatly helpful with the code size of our code base.
+    It provides us with automatic discovery of available libraries at different locations, intuitive creation of dynamically and statically linked libraries and wide support on target architectures.
+    It is also substantially faster in initial preparation than \texttt{automake} and provides progress indication of the compilation, which is greatly helpful with the code longer than few thousands of lines.
 
     \subsection{Helper programs and scripts}
     \texttt{Bash} and \texttt{Python} are used as scripting languages to help with certain tasks, where appropriate.
     The former is used for streamlining sequences of commands for instance when doing initial set-up of the application.
     The latter turned out to be very useful with generation of batch scripts for running multiple jobs at \texttt{ARCHER} and \texttt{HECToR} and for plot generation.
-    At a certain point, before we had access to these supercomputers, scaling was achieved through an ad-hoc built job system working on \texttt{CPLAB} computers at the University of Edinburgh.
-    This enabled us to run the program at hundreds of cores at virtually unused computers, with full operating system level access to each of them.
-    Because of the inability to scale past a quite low amount of cores and quite low speed of CPU cores, we have obtained the access to the supercomputers and the Python job runner was scrapped.
+    At a certain point, before we had access to these supercomputers, scaling was achieved through a rudimentary job system working on \texttt{\href{http://www2.ph.ed.ac.uk/~wjh/faq/}{CPLAB}} computers at the University of Edinburgh.
+    This enabled us to run the program at hundreds of cores of virtually unused computers, with full operating system level access to each of them.
+    Because of the inability to scale past that quite low amount of cores and a low performance of CPUs, we have obtained the access to the supercomputers and the Python job runner was removed.
 
     \subsection{Libraries used}
-    We decided to use as many features available from the core of C++11 as possible, supplementing them with libraries only where needed and appropriate.
-    Most notably, we have used the \texttt{Boost}\cite{gurtovoy02} library for providing certain needed functionality that could be described as boiler-plate.
+    We decided to use as many features available in the core of C++11 as possible, supplementing them with libraries only where needed and found appropriate.
+    We have used the \texttt{Boost}\cite{gurtovoy02} library for providing certain needed functionality that could be described as boiler-plate.
     First of all, it enabled us to easily parse command line options.
-    We strongly feel that the command line and file options parser implemented by Boost is one of the best ones available for C++.
+    We strongly feel that the command line and file options parser implemented in Boost is one of the best ones available for C++.
     Additionally, an architecture-independent nanosecond resolution timer available as a part of Boost has been used for seeding random number generators.
-    It is work noting that we did use an implementation of Mersenne-Twister\cite{Matsumoto98} random number generator from Boost at first, but we decided against it, as the same RNG is available as a part of C++11.
+    It is worth noting that we did use an implementation of Mersenne--Twister\cite{Matsumoto98} random number generator from Boost at first, but we decided against it, as the same RNG is available as a part of C++11.
 
     Because application is usually ran on very big processor counts of above 5000 processors, we needed a data-exchange scheme suitable for such an usage.
     It is provided by \texttt{MPI}\cite{richard06}, which enables virtually perfect scaling of our application, while being acceptably intuitive and clear.
@@ -382,10 +452,10 @@ Additionally, the operators can be precomputed, greatly increasing the computati
 
     For matrix manipulation, we use a combination of \texttt{Armadillo}\cite{Sanderson10} and a self-written matrix class.
     \texttt{Armadillo} shines when it comes to intuitive usage and a wide range of available operations.
-    At certain performance-critical places we use our data structure instead, as it has several benefits.
+    At certain performance-critical places we use our own matrix structure instead, as it has several benefits.
     First of all it enables ultra-fast row swaps which require only a pointer swap.
     That is achieved while keeping all the data in a continuous block of memory and ensuring that after the swap is applied individual row data is not invalidated in CPU caches.
-    Additionally, the data is stored in a row-first manner, which exploits cache locality and memory prefetching when a matrix is multiplied by a vector.
+    Additionally, the data is stored in a row-first manner, which exploits cache locality and memory prefetching when a matrix is multiplied by a vector, resulting in substantially faster multiplications.
 
     \section{Organisations and tools that were essential to this thesis}
 
