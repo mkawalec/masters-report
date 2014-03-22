@@ -16,21 +16,28 @@
 
 
 \begin{document}
-\title{Masters project}
-\author{Michal Kawalec}
+\title{Low--dimensional modelling of turbulent drag--reduction}
+\author{Michal Kawalec \\ \small{University of Edinburgh}}
 \clearpage\maketitle
 
 \begin{abstract}
+Simulating the turbulent flow of fluid in a Hagen–Poiseuille situation is an influential and dynamically developing branch of Computational Physics.
+    We propose a simplified 1D model based on a Kuramoto-Sivashinsky equation specifically to investigate decaying turbulence.
+    We demonstrate the agreement of the model with experimental data, as well as provide additional insights into the nature of decaying turbulence. Our results provide insight previously unexplored by numerical models operating close to a Minimal Flow Unit.
+    Additionally, we propose a modification of our model to simulate turbulent drag reduction and report on the agreement of this modification with experimental data.
 \end{abstract}
 \thispagestyle{empty}
+\newpage
+\tableofcontents
 \newpage
 
 \section{Introduction}
 
-% This is just a mock introduction, will need to be changed at the end
-In this thesis we study the behaviour of a flow of fluid in a pipe.
-As can easily be imagined, having a proper model that provides us with an ability to discover its dynamics with little computational expense would enable us to have a better understanding of how the flow occurs and changes to turbulence.
-Before discussing the model though, we present a firm theoretical base on which further understanding will be built.
+This thesis is focused on developing an effective one-dimensional computational model of Polymeric drag reduction.
+It is divided into sections, in an effort to blah blah
+First we establish firm grounding into the nature of turbulence in pipe flow and turbulent drag reduction.
+Later the equations are introduced, with a thorough discussion of the 
+
 
 \subsection{Transition to turbulence}
 Discovering when and how a divergenceless fluid transits from linear flow to a turbulent one is of great importance in many areas of life and industry.
@@ -386,9 +393,6 @@ We have chosen Mersenne--Twister\cite{Matsumoto98}, as it is very fast, has extr
 We seed the random number generator with a nanosecond--resolution timer, which ensures sufficient entropy in seed values, even if tens of thousands of programs are started at almost the same time.
 As we do not need cryptographically--secure random numbers, the randomness offered by Mersenne--Twister is entirely sufficient to our needs.
 
-\section{What is measured}
-
-% TODO: Describe what we want to measure, do after the results section, I think.
 
 \section{Results}
 The results presented in this section were obtained on ARCHER, with $100000$ runs performed for each case.
@@ -398,7 +402,11 @@ Subsequently the values of resulting fit parameters were averaged and their vari
 In every case discussed here the resultant errors are smaller than $1\%$ of the value of the function at a given point.
 We decided not to include the error bars at the resultant plots, as they would be smaller than the width of the line used to draw the function, unnecessarily reducing the readability of the plots.
 For the double exponential case the fits only succeeded when the number of maximum function calls of the fitting procedure was increased substantially to accommodate the high variability of the exponential function.
-% Write about fitting procedure
+
+The data--gathering procedure was ran for the values of $R$ between $0.9$ and $1.09$ and domain sizes between $12\pi$ and $24\pi$, every $2\pi$ giving a total of 120 cases.
+This gives a total of $12$ million runs, each taking an average time of 3 minutes will fully vectorised code.
+The code was heavily optimised to exploit cache locality, automatic code vectorisation and large cache sizes of both AMD Interlagos (at HECToR) and Intel Ivybridge (at ARCHER) architectures.
+As the result the performance of the numerical code was improved by more than $200\%$ from the initial average time for a run of 7 minutes in case of fluid with polymer.
 
 
 \subsection{Survival probability}
@@ -477,7 +485,7 @@ This would mean that as the domain size increases the motion depends more strong
     \caption{Second derivative of \eqref{eq:g} for different domain sizes scaled to the value at $R=0.9$}\label{img:2der}
 \end{figure}
 
-As can be seen on Figure~\ref{img:2der}, there does exist a general correlation between the domain size and value of the second derivative.
+As can be seen on Figure~\ref{img:2der}, there does exist a general correlation between the domain size and value of the second derivative, which seems to point towards that conclusion that the motion depends less strongly on $R$ as domain size grows.
 For a definitive answer though we would require information on more domain sizes, as well more detailed results at higher $R$s.
 
 \section{Conclusion}
@@ -561,6 +569,11 @@ For a definitive answer though we would require information on more domain sizes
     First of all it enables ultra-fast row swaps which require only a pointer swap.
     That is achieved while keeping all the data in a continuous block of memory and ensuring that after the swap is applied individual row data is not invalidated in CPU caches.
     Additionally, the data is stored in a row-first manner, which exploits cache locality and memory prefetching when a matrix is multiplied by a vector, resulting in substantially faster multiplications.
+
+    \texttt{Alglib} was used for curve fitting.
+    Because fitting done by Alglib was applied at the end of the simulation, we opted to only use the Alglib-created data as a reference and use SciPy curve fitter after the results were retrieved.
+
+    \section{Personal Statement}
 
 
 \end{appendices}
