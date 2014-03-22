@@ -5,7 +5,7 @@
 \usepackage{amsmath,subcaption}
 \usepackage[toc,page]{appendix}
 
-\usepackage{minted,fontspec}
+\usepackage{minted,fontspec,float}
 \setmonofont{Menlo for Powerline}
 \setsansfont{Liberation Sans}
 
@@ -18,7 +18,12 @@
 \begin{document}
 \title{Masters project}
 \author{Michal Kawalec}
-\maketitle
+\clearpage\maketitle
+
+\begin{abstract}
+\end{abstract}
+\thispagestyle{empty}
+\newpage
 
 \section{Introduction}
 
@@ -385,12 +390,105 @@ As we do not need cryptographically--secure random numbers, the randomness offer
 
 % TODO: Describe what we want to measure, do after the results section, I think.
 
+\section{Results}
+The results presented in this section were obtained on ARCHER, with $100000$ runs performed for each case.
+As explained in more detail in Appendix~\ref{app:struct}, the fits are performed in Python using SciPy.
+In order to estimate the intrinsic errors and get a better fit, multiple fits to a random sample of the tail of the survival probability distributions were performed.
+Subsequently the values of resulting fit parameters were averaged and their variance was taken as a fitting error.
+In every case discussed here the resultant errors are smaller than $1\%$ of the value of the function at a given point.
+We decided not to include the error bars at the resultant plots, as they would be smaller than the width of the line used to draw the function, unnecessarily reducing the readability of the plots.
+For the double exponential case the fits only succeeded when the number of maximum function calls of the fitting procedure was increased substantially to accommodate the high variability of the exponential function.
+% Write about fitting procedure
+
+
+\subsection{Survival probability}
+As was established in the theoretical introduction, the decay probability of a chaotic system should be constant in time.
+This is caused by a chaotic saddle structure coupled with a Lyapunov constant of the motion.
+Just as in an example of a particle bouncing in a non-uniform box with a hole, the survival probability of the motion inside the chaotic box should quickly become exponential.
+As can be seen on Figure~\ref{img:surv_prob}, our system exhibits the same behaviour.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{surv_prob.png}
+    \caption{Survival probability of turbulent motion for $R=1.06$ with an exponential fit to the data. The threshold below which the points are fitted to the function is presented for easy visualisation.}\label{img:surv_prob}
+\end{figure}
+
+The data is fitted to an exponential function of the form:
+
+\[ f(t) = a_0 e^{a_1t}\]
+
+The fit to the tail of the data distribution is extremely precise, except possibly at the beginning of the distribution where the deviation is caused by the dependence on the initial conditions before the Lyapunov exponent takes over.
+The maximum time of the simulation was not constant, as $a_1$ depends strongly on the value of $R$.
+Therefore to achieve good fitting results it was increased for $R > 1.06$ to $21000$, which caused subsequent fits to be much more accurate.
+
+An interesting intuitive parallel can be drawn between the appearance of this graph and the survival in radioactive decay.
+The functional behaviour of the fit of the turbulent decay data is the same as the survival probability of a radioactive decay.
+This correlation stems from the constant decay probability of a chaotic saddle and radioactive decay, which again confirms the assumption for the motion simulated by our equation follows that observed in experiments in turbulence.
+
+
+\subsection{Double exponential fit to the values of $a_1$}
+To verify that our system of equations simulates real turbulence well, we require two effects to be present.
+First of all, in line with the experimental literature~\cite{Hof06}, we expect $a_1$ to depend double exponentially on the values of $R$.
+It is a very delicate test and if it is possible to validate it will provide a strong validation to our model.
+Additionally, we predict that the lower the domain size the less strong the dependence of $a_1$ is going to be on the Reynolds number.
+We think that this will occur because as we reach the Minimal Flow Unit, the behaviour of the fluid becomes more and more simple thus leaving less possibility of variation with the increasing $R$.
+To test the first hypothesis, we've attempted a fit to a double exponential function of the following form:
+
+\begin{equation}\label{eq:g}
+ g(R) = b_0\exp(-b_1\exp(b_2R))
+ \end{equation}
+
+We managed to obtain a good quality fit for all domain for which data is present except $14\pi$.
+Because the double exponential fit is so dependent on starting conditions it is possible that a different choice of those would create a viable fit for that domain size.
+The lack of convergence of the fitting procedure for $14\pi$ is not an important issue though, as we have a wealth of other measurement points.
+For domain sizes other than $14\pi$ the fits of good quality are possible.
+
+When it comes to accuracy of the fit, we expect some loss of accuracy as $R$ increases.
+This is caused both by possibly insufficient maximum fitting simulation runtime and just lower amount of points in the distribution available at higher run times.
+Unfortunately, it was impossible to increase the maximum time further than $21000$, as our runtime quota on ARCHER was saturated before we noticed the inadequate runtime.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{double_exp_fit}
+    \caption{Values of $a_1$ at selected domain sizes and a double exponential fit to them (top). The bottom shows the fit residue at the highest domain size divided by the value of the data at a given data point.}
+\end{figure}
+
+The dependence of the fit parameters on the domain size is presented on Figure~\ref{img:b_params}.
+It is interesting to notice that as $b_1$ decreases exponentially, $b_2$ increases almost linearly.
+This begs the question, if the values of $g(x)$ intrinsically different for various domain sizes beyond a scaling factor.
+It is possible for the effects of $b_1$ and $b_2$ to completely cancel themselves and then the only difference between them would be a scaling factor.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=0.45\textwidth]{b1_vs_domain.png}
+    \includegraphics[width=0.45\textwidth]{b2_vs_domain.png}
+    \caption{The double exponential fit parameters $b_1$ (left) and $b_2$ (right) for domain sizes for which a fit was possible to be constructed.}\label{img:b_params}
+\end{figure}
+
+We can infer some general qualitative information regarding this problem from the already presented plots.
+Even from that limited data it seems that the dependence is deeper than just the effect of a scaling factor, for instance $12\pi$ overtakes $16\pi$ for large $R$.
+In order to gain more insight, let's consider the second derivative on Figure~\ref{img:2der}.
+Our expectation is for the second derivative to increase as the domain size grows.
+This would mean that as the domain size increases the motion depends more strongly on $R$.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=\textwidth]{scaled_fit}
+    \caption{Second derivative of \eqref{eq:g} for different domain sizes scaled to the value at $R=0.9$}\label{img:2der}
+\end{figure}
+
+As can be seen on Figure~\ref{img:2der}, there does exist a general correlation between the domain size and value of the second derivative.
+For a definitive answer though we would require information on more domain sizes, as well more detailed results at higher $R$s.
+
+\section{Conclusion}
+
+\newpage
 \bibliographystyle{plain}
 \bibliography{masters}
 
 \newpage
 \begin{appendices}
-    \section{Program structure}
+    \section{Program structure}\label{app:struct}
     \subsection{Choice of language}
     Before the start of the project different programming languages were considered for its implementation.
     It was quickly agreed upon that speed and scalability are by far the most important requirements for the program, which left only C++, Haskell and C as the likely contenders (of course only languages familiar to the author were considered).
@@ -438,6 +536,13 @@ As we do not need cryptographically--secure random numbers, the randomness offer
     This enabled us to run the program at hundreds of cores of virtually unused computers, with full operating system level access to each of them.
     Because of the inability to scale past that quite low amount of cores and a low performance of CPUs, we have obtained the access to the supercomputers and the Python job runner was removed.
 
+    The plots are created in Python using Matplotlib, SciPy and NumPy libraries.
+    All the fits used in this thesis are achieved using the same stack, with data caching in Redis where appropriate.
+    The ease of using various APIs and wonderful choice of libraries make Python an amazing choice for data analysis.
+
+    The development was conducted with the help of \texttt{git} and \href{https://github.com/mkawalec/masters}{github}.
+    Even though all the code was written by the author so none of the collaboration--focused functionality was used, both were very valuable tools for providing backups and edition history.
+
     \subsection{Libraries used}
     We decided to use as many features available in the core of C++11 as possible, supplementing them with libraries only where needed and found appropriate.
     We have used the \texttt{Boost}\cite{gurtovoy02} library for providing certain needed functionality that could be described as boiler-plate.
@@ -456,8 +561,6 @@ As we do not need cryptographically--secure random numbers, the randomness offer
     First of all it enables ultra-fast row swaps which require only a pointer swap.
     That is achieved while keeping all the data in a continuous block of memory and ensuring that after the swap is applied individual row data is not invalidated in CPU caches.
     Additionally, the data is stored in a row-first manner, which exploits cache locality and memory prefetching when a matrix is multiplied by a vector, resulting in substantially faster multiplications.
-
-    \section{Organisations and tools that were essential to this thesis}
 
 
 \end{appendices}
