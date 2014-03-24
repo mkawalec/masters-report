@@ -10,39 +10,78 @@
 \setsansfont{Liberation Sans}
 
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\bigl(#1\bigr)}}
+\usepackage{head,epsf}
 
 \graphicspath{{./img/}}
 \DeclareGraphicsExtensions{.pdf,.png,.jpg}
 
 
 \begin{document}
-\title{Low--dimensional modelling of turbulent drag--reduction}
-\author{Michal Kawalec \\ \small{University of Edinburgh}}
-\clearpage\maketitle
+\epsfxsize=40mm
+\begin{minipage}[b]{110mm}
+    {\Huge\bf School of Physics \\and Astronomy
+    \vspace*{17mm}}
+\end{minipage}
+\hfill
+\begin{minipage}[b]{40mm}
+    \makebox[40mm]{
+    \includegraphics[width=40mm]{UoEcrest.pdf}}
+\end{minipage}
+\par\noindent
+
+\begin{center}
+    \Large\bf Low--dimensional modelling of turbulent drag--reduction\\
+    \Large\bf MPhys Project Report
+\end{center}
+\vspace*{1.5cm}
+\begin{center}
+    \bf Michal Kawalec\\
+    24th March 2014
+\end{center}
+\vspace*{5mm}
 
 \begin{abstract}
 Simulating the turbulent flow of fluid in a Hagen–Poiseuille situation is an influential and dynamically developing branch of Computational Physics.
     We propose a simplified 1D model based on a Kuramoto-Sivashinsky equation specifically to investigate decaying turbulence.
     We demonstrate the agreement of the model with experimental data, as well as provide additional insights into the nature of decaying turbulence. Our results provide insight previously unexplored by numerical models operating close to a Minimal Flow Unit.
     Additionally, we propose a modification of our model to simulate turbulent drag reduction and report on the agreement of this modification with experimental data.
+    HECToR and ARCHER supercomputers are used for running the simulations and architecture-specific issues are discussed.
 \end{abstract}
+\vspace*{1cm}
+\vspace*{3cm}
+Signature:\hspace*{8cm}Date:
+
+\vfill
+{\bf Supervisor:} Dr. A. Morozov
 \thispagestyle{empty}
 \newpage
+\setcounter{page}{1}
+\footruleheight{1pt}
+\headruleheight{1pt}
+\lfoot{\small School of Physics and Astronomy}
+\lhead{Review report}
+\rhead{- \thepage}
+\cfoot{}
 \tableofcontents
 \newpage
 
 \section{Introduction}
 
-This thesis is focused on developing an effective one-dimensional computational model of Polymeric drag reduction.
-It is divided into sections, in an effort to blah blah
-First we establish firm grounding into the nature of turbulence in pipe flow and turbulent drag reduction.
-Later the equations are introduced, with a thorough discussion of the 
+This thesis is focused on developing an effective one-dimensional computational model of Polymeric Drag Reduction.
+A division into sections was introduced in an effort to give a more structured view of the problem.
+We start with a theoretical introduction to establish a firm grounding into the nature of turbulence and latest numerical and experimental results from the fields.
+We then proceed with the rationale for development of our systems of equations and description of numerical methods used for solving them.
+At the end, we give results and their discussion.
+This is followed by appendices that shed more light onto rationale for code construction and thoughts of the author onto the effort spent on during the duration of the project.
+
+Each section is written in a mostly self-contained fashion so that it can be read independently from all the others.
+Despite that fact we recommend linear reading strategy for the best chance in understanding the problems involved.
 
 
 \subsection{Transition to turbulence}
 Discovering when and how a divergenceless fluid transits from linear flow to a turbulent one is of great importance in many areas of life and industry.
 As the turbulent state produces a much increased drag than a simple parabolic profile, being able to predict and minimize the frequency of its occurrence would enable us to transport many liquid goods like oil more efficiently.
-This problem of when and how turbulence appears has been asked for quite some time now, starting with the classic papers by Poiseuille\cite{Poiseuille40} and Reynolds\cite{Reynolds83}.
+This problem of when and how turbulence appears is being investigated for quite some time now, starting with the classic papers by Poiseuille\cite{Poiseuille40} and Reynolds\cite{Reynolds83}.
 Reynolds has introduced a concept of a Reynolds number, which was experimentally determined to indicate the expected bulk behaviour of a fluid as its speed increases.
 Reynolds number is expressed in terms of the mean flow speed \(u\), pipe diameter \(d\) and viscosity of the fluid in question \(v\) as \(Re = ud/v\).
 Reynolds discovered that, for his experiment, it was possible to carefully maintain the laminar flow up to \(Re\) of \(12000\).
@@ -54,7 +93,7 @@ One could wonder what is the reason behind this spread of values in different ex
 As we now know, for a liquid flowing in a pipe, the laminar profile is stable at any Reynolds number\cite{Eckhardt07}.
 Therefore in order for the flow to transit to a turbulent situation a stimulus needs to be applied to the pipe, usually in form of a fluid injection or suction\cite{Darbyshire95}.
 In order for the turbulent flow to be observed the perturbation needs to be strong enough for disturbance to not decay and produce at least an instant of turbulence in the fluid flow\cite{Salwen80}\cite{Meseguer03}.
-Because of a variation in perturbation strengths and differing methods in experiments made a range of transition points was determined.
+Because of a variation in perturbation strengths and differing methods in experiments a range of transition points was determined.
 Additionally, it was noticed that the higher a Reynolds number for a flow, the lower the strength of a perturbation that needs to be applied to turn the flow turbulent\cite{Hof03}.
 The differing perturbation strength is also the reason for the maximum Reynolds number at which a laminar flow can be sustained.
 Certain perturbations are impossible to get rid of in a real experimental setting, like ground vibrations from a distant highway or impurities in the pipe geometry.
@@ -81,11 +120,11 @@ Additionally, such flow patterns are observed in our one dimensional model, as w
 A common device for understanding complex mechanical systems is to consider them in their state space, which in case of a fluid flow in a pipe\cite{Lanford82} is a space of all velocity fields that can possibly occur as the flow undergoes various transitions.
 Because we know that the parabolic profile is stable\cite{Eckhardt07} and will never turn into turbulence by itself, it is a fixed point and an attractor in the phase space.
 As the Reynolds number increases the strength of the attraction decreases, thus making it much more likely for the flow to escape the basin of attraction and become turbulent.
-This is evidenced in results of experiments and simulations (CITE) showing that increasing Reynolds number decreases the perturbation required for triggering the turbulence.
+This is evidenced in results of experiments and simulations\cite{Eckhardt07} showing that increasing Reynolds number decreases the perturbation required for triggering the turbulence.
 If the turbulent states were attractors\cite{Guckenheimer86}\cite{Lanford82}, all states close to the turbulent region would evolve towards the turbulence.
-However, we know both from the chaotic dynamics of the turbulent regions and from the fact turbulence can decay with no clear precursors that there must be chaotic elements\cite{Guckenheimer83} like horseshoes connected to the laminar profile in some ways.
-Such structures, that explain the dynamics of the turbulent motion, are known as chaotic or strange saddles.
-It is important to note that motion close to such saddles has a positive and important Lyapunov exponent, which in effect removes any notable correlation in the phase space trajectories.
+However, we know both from the chaotic dynamics of the turbulent regions and from the fact turbulence can decay with no clear precursors that there must be chaotic elements\cite{Guckenheimer83} like horseshoes that are connected to the laminar profile in some ways.
+Such structures that explain the dynamics of the turbulent motion, are known as chaotic or strange saddles.
+It is important to note that motion close to such saddles has a positive Lyapunov exponent, which in effect removes any notable correlation in the phase space trajectories.
 With uncorrelated trajectories, the probability of escaping from the saddle is constant in time.
 
 An analogy that we think enables one to intuitively gasp the motion of a chaotic system in its state space is to consider a particle bouncing in an irregular box\cite{Ott93}.
@@ -94,10 +133,10 @@ To make this scheme dissipative and not energy conserving, as is the case with a
 The model is still incomplete at this stage, as we haven't specified how such motion could decay.
 Cutting out a hole of an appropriate size in a wall of the box would provide us with an opportunity of accommodating for this case: if the particle escapes the box, we assume that the system had decayed.
 Before hitting the hole the particle is going to bounce around in a random fashion.
-Its motion will exhibit a positive Lyapunov exponent, which will cause it to quickly loose correlation between the starting conditions.
+Its motion will exhibit a positive Lyapunov exponent, which will cause it to quickly become insensitive to the starting conditions, assuming we can set them with finite accuracy.
 Therefore, as in the real turbulent motion, the probability of hitting the wall will be constant, that means proportional to the ratio of the area of the hole and the total surface area of the box.
 There is an even deeper analogy to the real case here.
-Because the influence of the Lyapunov exponent increases as the time progresses, the chance of the fast decaying cases of the particle hitting a wall soon after being released will diverge from the constant probability case existing for longer lasting motion.
+Because the influence of the Lyapunov exponent increases as the time progresses, the chance of the fast decaying cases of the particle escaping through the hole soon after being released will diverge from the constant probability case existing for longer lasting motion.
 
 This seemingly simple model is surprisingly close to what actually happens in a pipe flow.
 Apart from providing us with an intuitive understanding of state space dynamics of turbulence and its decay it implies that the distribution of lifetimes has to be exponential, which stems from the positive Lyapunov exponent causing the probability of hitting a wall to be constant.
@@ -109,10 +148,10 @@ So far, it was only possible to determine an exact value of the Lyapunov constan
 \subsubsection{Experiments}
 In experiments the transition to turbulence is triggered by either injecting in or sucking out a certain amount of liquid from the flow.
 The change in the amount of liquid perturbs the parabolic profile of a linear flow and causes it either to become turbulent or not.
-If the fluid doesn't become turbulent, the perturbation decays and no persistent turbulence is noted.
+If the disturbance of the fluid doesn't linger, the perturbation decays and no persistent turbulence is noted.
 Darbyshire \& Mullin\cite{Darbyshire95} investigated what amplitude of perturbations needs to be applied to a parabolic profile to trigger the transition to turbulence for a pipe flow.
 They discovered not only that for the neighbouring points (up to the experimental resolution) the effect of applying the perturbation can be strikingly different, but that for the same points the transition sometimes occurred and sometimes didn't.
-Additionally, there seemed to be no way of determining (except from a rough estimate) if a given disturbance is going to cause a transition of turbulence, or will decay to the laminar state without inducing the disturbance.
+Additionally, there seemed to be no way of determining (except from a rough estimate) if a given disturbance is going to cause a transition to turbulence or will decay to the laminar state.
 
 \begin{figure}[h]
     \centering
@@ -131,7 +170,7 @@ This relation is again confirmed by experiments in the ranges of Reynolds number
 \subsubsection{Lifetimes}
 It is generally agreed that because of the strong variability of lifetimes with changing initial conditions, it is more useful to look at the lifetimes in bulk, focusing on certain statistical properties of them, such as the survival probability at different times from the instant when the perturbation was introduced.
 Because of the positive Lyapunov constant in the evolution of the system through the phase space, the probability of decay to the laminar state is independent of time, just as in our example of a particle in a box.
-Because of the decay probability being constant in time, the distribution of lifetimes is an exponential\cite{Kadanoff84}.
+Because of the decay probability being constant in time the distribution of lifetimes is an exponential\cite{Kadanoff84}.
 The experimental data confirms this theoretical prediction and exponential distribution of survival probability is indeed observed.
 Such a distribution implies the earlier mentioned property of the turbulent state to be a chaotic saddle in the state space.
 As well as being supported by experiment, numerical simulations also produce exponentially decaying survival probabilities\cite{Eckhardt02}.
@@ -145,15 +184,15 @@ Additionally, same functional form of the dependence was found in plane Couette 
 
 Naturally, in the above cases we are talking about the tail of survival probability distribution, as at short lifetimes the evolution is influenced strongly by starting conditions and thus deviate from the exponential fit quite markedly in some cases.
 Using the data we have from the numerical simulations we can tell that the characteristic time of the probability distribution increases quite drastically with an increasing Reynolds number.
-While there is no theoretical prediction to the nature of the dependence of this time on the Reynolds number, the most recent experiments performed in long pipes suggest that the characteristic time does not diverge, but increases exponentially with Reynolds number.
-This is in line with the results of numerical simulations which, in a limited \(Re\) range, have also shown an exponential increase of the characteristic time.
+While there is no theoretical prediction to the nature of the dependence of this time on the Reynolds number, the most recent experiments performed in long pipes suggest that the characteristic time does not diverge, but increases double exponentially with Reynolds number.
+This is in line with the results of numerical simulations which, in a limited \(Re\) range, have also shown such an increase of the characteristic time.
 
 \subsubsection{Exact coherent states}
-As much as the motion of a system in a turbulent state is chaotic, we know now that there exist simpler, regular solutions to the equations of motion.
+As much as the motion of a system in a turbulent state is chaotic, we know now that there exist simpler, regular solutions to the equations of motion in that area of the phase space.
 Because we know that the turbulence is a chaotic saddle, different researchers have tried to find these saddle states around which the motion evolves\cite{Clever92}\cite{Clever97}\cite{Nagata90}\cite{Faisst00}.
-Finding these states that guide the spatial and temporal evolution of a flow in a pipe may help with understanding the nature of flow better.
+Finding them may help with understanding the nature of flow better, as they guide the spatial and temporal evolution of the flow.
 Because of the lack of inversion symmetry in the laminar profile of a pipe flow, the simplest coherent solutions to the equations of motion take form of travelling waves.
-An example of such a travelling wave is presented on Image~\ref{img:stat_states}, arrows indicating fluid flow in place of the cross-section.
+An example of such a travelling wave is presented on Image~\ref{img:stat_states}, arrows indicating fluid flow in plane of the cross-section.
 
 \begin{figure}[h]
     \centering
@@ -163,7 +202,7 @@ An example of such a travelling wave is presented on Image~\ref{img:stat_states}
 
 The waves that have been found contain from two to five `vortex pairs that generate high-speed streaks close to the walls and low speed streaks in the centre'\cite{Eckhardt07}.
 As the time passes, the high-speed streaks evolve very little, with some minor change in their intensity, whereas the low-speed ones move around the centre of the flow quite considerably.
-States strikingly similar to the ones predicted by the simulation are observed by means of stereoscopic particle image velocimetry\cite{How04etal}.
+States strikingly similar to the ones predicted by the simulation are observed by means of stereoscopic particle image velocimetry\cite{Hof04etal}.
 The technique requires addition of light-reflecting particles and measuring their positions in a thin cross-section of the flow produced by light from a pulsed laser.
 Difference between the observed states and the ones predicted by the simulation is due to both the dissipative nature of a flow and the fact that a trajectory of the system in a state space will lead close, but not through the stationary states.
 
@@ -179,7 +218,7 @@ That, when one thinks about the analogy of particle in a box, implies that movem
 \subsection{Drag reduction}
 
 It turns out that addition of particles into the flow quite strikingly changes its behaviour and subsequent evolution in the state space.
-It has been known since the 1940s\cite{Toms49}\cite{Mysels72} that addition of very limited amounts of polymers to water heavily reduces its its propensity to become turbulent and enables laminar flows at higher Reynolds numbers.
+It has been known since the 1940s\cite{Toms49}\cite{Mysels72} that addition of very limited amounts of polymers to water heavily reduces its propensity to become turbulent and enables laminar flows at higher Reynolds numbers.
 Additionally, once the motion becomes turbulent, the polymer additive reduces drag by around 80\%\cite{Sreenivasan00}.
 Later it was noticed that elasticity displayed by the polymer is not required for a substantial modification of the flow dynamics\cite{Pashkewitz04} and materials such as paper or cloth pulp\cite{Radin75}\cite{Robertson57}, asbestos\cite{Mccomb85} and colloidal crystals\cite{Pirith72}\cite{Radin75}.
 Drag reduction caused by the non-elastic additives is less pronounced than that caused by polymers of various kinds.
@@ -201,7 +240,7 @@ Because of certain limitations of the model discussed later it provides us with 
 
 \section{Introduction of equations}
 In the subsequent thesis, we will focus on presenting a relatively simple system of coupled differential equations.
-We will test if the system produces results that are in line with the large-scale behaviour of turbulent fluid in a pipe and thus will provide us with much more efficient model for analysing the flow than solving the full Navier-Stokes equation.
+We will test if the system produces results that are in line with the large-scale behaviour of turbulent fluid in a pipe and thus will provide us with a much more efficient model for analysing the flow than solving the full Navier-Stokes equation.
 We feel that in presenting the equations it is much more educational to first consider the sources of our system of equations and then introduce the full system at the end.
 This way the reader will gain an insight into rationale for existence of individual parts of the equations and will understand them on an intuitive level.
 
@@ -212,7 +251,7 @@ In order to understand the dynamics of our system of equations~\eqref{eq:our1}, 
 \frac{\delta u}{\delta t} = -\frac{\delta^4u}{\delta x^4} - 2\frac{\delta^2u}{\delta x^2} - (1 - \epsilon )u + N(u)
 \end{equation}
 
-As far as this equation does not simulate our turbulent system, it serves as a good basis for understanding of different issues that must be taken into account when creating a correct one.
+As far as this equation does not simulate our turbulent system, it serves as a good basis for understanding the different issues that must be taken into account when creating a correct one.
 One of the major requirements on a system of equations that would serve our purpose well is for it to exhibit chaotic behaviour.
 To check if that is the case in~\eqref{eq:sh1}, let's think of a case of small perturbations, which lets us neglect the non-linear $u^3$ part and expand $u$ in Fourier modes. Then:
 
@@ -258,12 +297,12 @@ Continuing our journey of finding a suitable model to our problem, let's conside
 \end{equation}
 
 This equation also exhibits a point of linear instability at $\epsilon = 0$.
-It's behaviour is more interesting though, as if $\epsilon$ is just higher than zero, the solutions become periodic in time.
+Its behaviour is more interesting though, as if $\epsilon$ is just higher than zero, the solutions become periodic in time.
 As $\epsilon$ is increased even further, the motion finally becomes chaotic.
 Even though the motion is chaotic, it is at the same time linearly unstable.
 In order to get rid of the linear instability we propose the following modification.
 
-\subsection{Modified Kuramoto--Sivashinsky}
+\subsection{Modified Kuramoto--Sivashinsky equations}
 We require $\epsilon$ to be smaller then zero, to enforce linear stability.
 Additionally, we note that if an amplitude in~\eqref{eq:ks1} is kept above a certain threshold, the chaotic behaviour is preserved.
 In order to force the amplitude to remain in the chaotic region, we will couple our equation to a second one describing a field forcing the value of $u$.
@@ -337,7 +376,7 @@ Notice that in order to obtain the value of $u^{n+1}$, a system of equations nee
 Because the split into the linear and non-linear parts is applied, $F$ is completely linear.
 If it was not, it would be impossible to create a constant linear operator for the process and for each time step a non-linear system of equations would need to be solved, using Euler method.
 This would substantially increase the length of the computations.
-Thankfully for the computational effectiveness of the process, we split the equation and precompute linear operators can be precomputed ahead of time.
+To increase the computational effectiveness of the process, we split the equation and precompute linear operators ahead of time.
 With operator precomputation, the computational complexity of propagating the equation to a new time step is \BigO{n}, with $n$ being the spatial resolution.
 The advantage of Crank--Nicolson method over simple Euler scheme is drastically increased accuracy, as long as the ratio of $\Delta t$ to $\Delta x^2$ is kept low.
 
@@ -384,11 +423,11 @@ Which can be written in a clear and readable matrix form:
 \end{equation}
 
 Because all the coefficients in the $Z$ matrix are constant, $(I - Z)^{-1}(I + Z)$ can be precomputed before integration.
-This still results in \BigO{n^2} multiplications instead of \BigO{n} for each time step, but it is a cost that is not substantially higher (for typical number of dimensions) than that of other parts of the program.
+This still results in \BigO{n^2} multiplications instead of \BigO{n} (for the non-polymeric case) for each time step, but it is a cost that is not substantially higher (for typical number of dimensions) than that of other parts of the program.
 
 \subsection{Starting conditions}
 In order to integrate the equation~\eqref{eq:our_poly} numerically, we need to determine starting conditions.
-As we are interested in the bulk behaviour of many turbulent runs and we need reasonable amount of statistics, we have decided to get the starting conditions from a random number generator.
+As we are interested in the bulk behaviour of many turbulent runs and we need reasonable amount of statistics, we have decided to set the starting conditions from a random number generator output.
 We have chosen Mersenne--Twister\cite{Matsumoto98}, as it is very fast, has extremely large period, very good equidistirbution properties and is readily available on the platform used by us.
 We seed the random number generator with a nanosecond--resolution timer, which ensures sufficient entropy in seed values, even if tens of thousands of programs are started at almost the same time.
 As we do not need cryptographically--secure random numbers, the randomness offered by Mersenne--Twister is entirely sufficient to our needs.
@@ -398,6 +437,7 @@ As we do not need cryptographically--secure random numbers, the randomness offer
 The results presented in this section were obtained on ARCHER, with $100000$ runs performed for each case.
 As explained in more detail in Appendix~\ref{app:struct}, the fits are performed in Python using SciPy.
 In order to estimate the intrinsic errors and get a better fit, multiple fits to a random sample of the tail of the survival probability distributions were performed.
+The random sample is determined using a Mersenne--Twister RNG, seeded with 256 bits of entropy taken from a random Linux kernel source.
 Subsequently the values of resulting fit parameters were averaged and their variance was taken as a fitting error.
 In every case discussed here the resultant errors are smaller than $1\%$ of the value of the function at a given point.
 We decided not to include the error bars at the resultant plots, as they would be smaller than the width of the line used to draw the function, unnecessarily reducing the readability of the plots.
@@ -406,7 +446,7 @@ For the double exponential case the fits only succeeded when the number of maxim
 The data--gathering procedure was ran for the values of $R$ between $0.9$ and $1.09$ and domain sizes between $12\pi$ and $24\pi$, every $2\pi$ giving a total of 120 cases.
 This gives a total of $12$ million runs, each taking an average time of 3 minutes will fully vectorised code.
 The code was heavily optimised to exploit cache locality, automatic code vectorisation and large cache sizes of both AMD Interlagos (at HECToR) and Intel Ivybridge (at ARCHER) architectures.
-As the result the performance of the numerical code was improved by more than $200\%$ from the initial average time for a run of 7 minutes in case of fluid with polymer.
+As the result the performance of the numerical code was improved by more than $200\%$ from the initial average time for a run of 7 minutes in case of polymeric fluid.
 
 
 \subsection{Survival probability}
@@ -437,7 +477,7 @@ This correlation stems from the constant decay probability of a chaotic saddle a
 \subsection{Double exponential fit to the values of $a_1$}
 To verify that our system of equations simulates real turbulence well, we require two effects to be present.
 First of all, in line with the experimental literature~\cite{Hof06}, we expect $a_1$ to depend double exponentially on the values of $R$.
-It is a very delicate test and if it is possible to validate it will provide a strong validation to our model.
+It is a very delicate test and if it is possible to verify it will provide a strong validation to our model.
 Additionally, we predict that the lower the domain size the less strong the dependence of $a_1$ is going to be on the Reynolds number.
 We think that this will occur because as we reach the Minimal Flow Unit, the behaviour of the fluid becomes more and more simple thus leaving less possibility of variation with the increasing $R$.
 To test the first hypothesis, we've attempted a fit to a double exponential function of the following form:
@@ -447,7 +487,7 @@ To test the first hypothesis, we've attempted a fit to a double exponential func
  \end{equation}
 
 We managed to obtain a good quality fit for all domain for which data is present except $14\pi$.
-Because the double exponential fit is so dependent on starting conditions it is possible that a different choice of those would create a viable fit for that domain size.
+Because the double exponential fit is so dependent on starting conditions to the fitting procedure, it is possible that a different choice of those would create a viable fit for that domain size.
 The lack of convergence of the fitting procedure for $14\pi$ is not an important issue though, as we have a wealth of other measurement points.
 For domain sizes other than $14\pi$ the fits of good quality are possible.
 
@@ -466,7 +506,7 @@ It is interesting to notice that as $b_1$ decreases exponentially, $b_2$ increas
 This begs the question, if the values of $g(x)$ intrinsically different for various domain sizes beyond a scaling factor.
 It is possible for the effects of $b_1$ and $b_2$ to completely cancel themselves and then the only difference between them would be a scaling factor.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.45\textwidth]{b1_vs_domain.png}
     \includegraphics[width=0.45\textwidth]{b2_vs_domain.png}
@@ -479,7 +519,7 @@ In order to gain more insight, let's consider the second derivative on Figure~\r
 Our expectation is for the second derivative to increase as the domain size grows.
 This would mean that as the domain size increases the motion depends more strongly on $R$.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{scaled_fit}
     \caption{Second derivative of \eqref{eq:g} for different domain sizes scaled to the value at $R=0.9$}\label{img:2der}
@@ -487,6 +527,10 @@ This would mean that as the domain size increases the motion depends more strong
 
 As can be seen on Figure~\ref{img:2der}, there does exist a general correlation between the domain size and value of the second derivative, which seems to point towards that conclusion that the motion depends less strongly on $R$ as domain size grows.
 For a definitive answer though we would require information on more domain sizes, as well more detailed results at higher $R$s.
+
+\subsection{Exponential fit at different elasticities}
+In order to verify the results for equation~\eqref{eq:our_poly}, we have measured the survival probability  with the polymeric modification turned on.
+
 
 \section{Conclusion}
 
@@ -571,9 +615,32 @@ For a definitive answer though we would require information on more domain sizes
     Additionally, the data is stored in a row-first manner, which exploits cache locality and memory prefetching when a matrix is multiplied by a vector, resulting in substantially faster multiplications.
 
     \texttt{Alglib} was used for curve fitting.
-    Because fitting done by Alglib was applied at the end of the simulation, we opted to only use the Alglib-created data as a reference and use SciPy curve fitter after the results were retrieved.
+    Because fitting done by \texttt{Alglib} was applied at the end of the simulation, we opted to only use the Alglib-created data as a reference and use SciPy curve fitter after the results were retrieved.
 
     \section{Personal Statement}
+    Most of the effort spent during this masters was on code development.
+    Many issues needed to be considered and a lot of profiling, code tuning and modifications needed to be done in order to achieve high enough performance.
+    I have also spent a substantial amount of time dealing with intricacies of C++.
+    Especially getting the program to link correctly in a rather special environment available at HECToR and ARCHER was a hurdle, and success was not always possible (I did not manage to link against CRAY version of LAPACK called libsci).
+    During the course of the development, I've even found a bug in optimizing code in gcc 4.8.2 which was especially hard to find as it presented itself as error in my code.
+
+    Much harder than just plain implementation of the equations was understanding the meaning and rationale for its different parts.
+    Implementation was also hard, but problems associated with it were mostly due to `easy' mistakes as a misplaced plus sign or a constant factor.
+    The code structure and runtime-discovered plug-in system is a result of substantial experience I have in commercial and academic programming and in effect did not require a big amount of effort from me.
+
+    The code base had evolved considerably during the course of the project.
+    It was targeting the cplab computers at first and thus all the map-reducing was done on the Python layer.
+    Later I got access to HECToR and ARCHER, which required considerable modifications to the structure.
+    The reducing was done from inside of the program using MPI and fold operations and the code was optimised to run on very high processor counts.
+
+    Finding memory leaks was a slight challenge after migrating to MPI, as Valgrind shows certain MPI communication operations as generating memory leaks.
+
+    I found the associated physics mostly straightforward, as it is built on generally classical concepts and requires more of an intuitive understanding then mathematical complexity.
+    This is helped by the simple nature of our model, which uses scalars instead of stress tensors as we operate in a one dimensional scenario.
+
+    I've based the theory part on five papers provided to be by my supervisor and explored the rest of the literature from them.
+    This was easy as one of them (\cite{Eckhardt07}) was a review of almost all the issues relevant to this thesis.
+
 
 
 \end{appendices}
