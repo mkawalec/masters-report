@@ -528,11 +528,60 @@ This would mean that as the domain size increases the motion depends more strong
 As can be seen on Figure~\ref{img:2der}, there does exist a general correlation between the domain size and value of the second derivative, which seems to point towards that conclusion that the motion depends less strongly on $R$ as domain size grows.
 For a definitive answer though we would require information on more domain sizes, as well more detailed results at higher $R$s.
 
-\subsection{Exponential fit at different elasticities}
+\subsection{Exponential fit at different polymeric elasticities}
 In order to verify the results for equation~\eqref{eq:our_poly}, we have measured the survival probability  with the polymeric modification turned on.
+The results are summarised on Figure~\ref{img:lambdas}.
+For values of $\lambda$ between around $10^{-5}$ to $2\times 10^{-3}$ we observe the values of $a_1$ to be almost exactly the same as they are when no polymer is added.
+We note that $a_1$ corresponds to the amount of Drag Reduction present -- with higher $a_1$ turbulence (in bulk) relaminarises more quickly and thus we conclude that this is caused by higher chance of escaping from the turbulent saddle caused by DR\cite{Graham04}.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{lambdas}
+    \caption{Values of a parameter of an exponential fit at different elasticities, $R=1.04$ and domain size of $24\pi$}\label{img:lambdas}
+\end{figure}
+
+As the elasticity is increased, from around $\lambda=10^{-2}$ we observe progressively stronger Drag Reduction, as expected\cite{Lee74}.
+We cannot explain the behaviour at low elasticities of below $10^{-6}$, but we suspect that it corresponds to experimentally observed DR caused by rigid fibres\cite{Pirith72}\cite{Pashkewitz04}.
+
+It is enlightening to look at differences in phase space behaviour between fluid mixed with polymers with elasticity of $10^{-2}$ and $10^{-5}$.
+As can be seen on Figure~\ref{img:phase}, at $\lambda=10^{-2}$ the lower states are visited more frequently giving more chances to relaminarise and hence increasing $a_1$.
+This is both in line with literature\cite{Graham04} and supports our hypothesis that the amount of Drag Reduction is correlated with the value of $a_1$.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{phase}
+    \caption{Phase space evolution for two different elasticities. The motion starts in the bottom right corner of the phase space and evolves until it reaches the bottom left corner where the flow is laminar.}\label{img:phase}
+\end{figure}
+
+There is another marked difference between the evolution of the system at these two values of elasticity.
+Looking at power plot at Figure~\ref{img:fourier} we can clearly see that at higher elasticity (and higher Drag Reduction) the middle frequencies have much lower intensity.
+This can be confirmed by visual inspection of the evolution plot.
+At higher $\lambda$ there is much less fine structures present in the phase space evolution, another clue pointing to increased drag reduction happening then.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{fourier}
+    \caption{Power plots for two different polymer elasticities. We obtained them averaging frequency space images for at least ten long-lasting turbulent runs for each value of $\lambda$.}\label{img:fourier}
+\end{figure}
 
 \section{Conclusion}
+
+In this thesis we have developed a new, simplified model of turbulence in case of Newtonian and non-Newtonian flows in a pipe.
+We have considered various tests confirming its validity and have developed new hypotheses stemming from much bigger domain sizes reachable with little computational effort.
+Our research have shown a double exponential increase of characteristic time with increasing Reynolds number, which is in agreement with the latest research.
+We have also shown that the survival probability for decaying turbulence is exponential, thus verifying  the existence of a chaotic saddle in the phase space as a driving structure of the turbulence.
+
+For the polymeric case, we have confirmed the presence of Drag Reduction when polymers are highly elastic.
+When they are stiffer no DR was observed, until a certain stiffness when a peak of DR is present.
+It is possible that the peak is caused by DR being present with stiff additives, but this effect needs to be investigated further.
+
+Moreover we have observed clear differences in phase space appearance at different elasticities confirming existence or lack of Drag Reduction.
+The differences noted are twofold -- firstly drag reduction causes increased visits to regions of phase space conductive to relaminarisation, secondly makes less fine structures to be visible during system evolution.
+
+
+Additional work is required to confirm some of our observations.
+Notably, runs at lower domain sizes and with longer run times (for high $R$) will enable us to verify if motion becomes simpler as domain size decreases.
+
 
 \newpage
 \bibliographystyle{plain}
@@ -593,6 +642,7 @@ In order to verify the results for equation~\eqref{eq:our_poly}, we have measure
     The ease of using various APIs and wonderful choice of libraries make Python an amazing choice for data analysis.
 
     The development was conducted with the help of \texttt{git} and \href{https://github.com/mkawalec/masters}{github}.
+    The interested reader can get the source code this masters thesis is based upon at \url{https://github.com/mkawalec/masters} or at the public summary page at the University of Edinburgh.
     Even though all the code was written by the author so none of the collaboration--focused functionality was used, both were very valuable tools for providing backups and edition history.
 
     \subsection{Libraries used}
